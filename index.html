@@ -134,9 +134,17 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="exportData()" title="Ekspor Data JSON" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition">
-                    <i class="fa-solid fa-download"></i>
-                </button>
+                <!-- Dropdown Ekspor Lanjutan -->
+                <div class="relative group">
+                    <button class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition flex items-center space-x-1" title="Menu Ekspor Laporan">
+                        <i class="fa-solid fa-download"></i>
+                        <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i>
+                    </button>
+                    <div class="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-1 hidden group-hover:block z-50">
+                        <button onclick="exportData()" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"><i class="fa-solid fa-code text-primary-500 mr-2"></i>Ekspor JSON Backup</button>
+                        <button onclick="exportCSV()" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"><i class="fa-solid fa-file-excel text-emerald-500 mr-2"></i>Ekspor CSV / Excel</button>
+                    </div>
+                </div>
                 <button onclick="handleLogout()" title="Keluar Akun" class="p-2 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 hover:bg-rose-100 text-sm transition">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
@@ -149,6 +157,7 @@
         <div class="flex overflow-x-auto px-4 border-t border-gray-200 dark:border-gray-700 no-scrollbar">
             <button onclick="switchTab('dashboard')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-primary-600 text-primary-600 whitespace-nowrap" data-target="dashboard"><i class="fa-solid fa-chart-pie mr-2"></i>Dashboard</button>
             <button onclick="switchTab('transactions')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="transactions"><i class="fa-solid fa-right-left mr-2"></i>Transaksi</button>
+            <button onclick="switchTab('recurring')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="recurring"><i class="fa-solid fa-rotate mr-2"></i>Rutin Bulanan</button>
             <button onclick="switchTab('budgeting')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="budgeting"><i class="fa-solid fa-scale-balanced mr-2"></i>Budgeting</button>
             <button onclick="switchTab('assets')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="assets"><i class="fa-solid fa-vault mr-2"></i>Aset & Dompet</button>
             <button onclick="switchTab('savings')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="savings"><i class="fa-solid fa-bullseye mr-2"></i>Tabungan</button>
@@ -279,13 +288,30 @@
             </div>
         </section>
 
+        <!-- 2.5 RECURRING TRANSACTIONS TAB (Fitur 1) -->
+        <section id="recurring" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold">Transaksi Rutin Bulanan (Recurring)</h2>
+                        <p class="text-xs text-gray-500">Otomatiskan pengeluaran/pemasukan berulang setiap bulan (seperti kos, Netflix, internet).</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="processAllRecurring()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-medium shadow-sm transition flex items-center"><i class="fa-solid fa-play mr-1.5"></i>Proses Tagihan Bulan Ini</button>
+                        <button onclick="openRecurringModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-xs font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Tambah Rutin Baru</button>
+                    </div>
+                </div>
+                <div id="recurringGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+        </section>
+
         <!-- 3. BUDGETING TAB -->
         <section id="budgeting" class="tab-content hidden space-y-6">
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h2 class="text-lg font-bold">Manajemen Budgeting (Sisa Saldo & Pengurangan Transaksi)</h2>
-                        <p class="text-xs text-gray-500">Budget dimulai dari 100% dan akan terus berkurang seiring adanya pengeluaran transaksi.</p>
+                        <h2 class="text-lg font-bold">Manajemen Budgeting & Peringatan Pintar (Smart Alerts)</h2>
+                        <p class="text-xs text-gray-500">Budget dimulai dari 100% dan berkurang otomatis. Memberikan peringatan dini saat mendekati batas.</p>
                     </div>
                     <button onclick="openBudgetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Buat Budget Baru</button>
                 </div>
@@ -585,6 +611,40 @@
         </div>
     </div>
 
+    <!-- Recurring Modal (Fitur 1) -->
+    <div id="recurringModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded-2xl shadow-xl">
+            <h3 id="recurringModalTitle" class="text-base font-bold mb-4">Tambah Tagihan Rutin Bulanan</h3>
+            <form onsubmit="saveRecurring(event)" class="space-y-4">
+                <input type="hidden" id="recId">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Nama Tagihan / Rutinitas</label>
+                    <input type="text" id="recNote" placeholder="Contoh: Wifi, Netflix, Kos" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Nominal (Rp)</label>
+                    <input type="number" id="recAmount" placeholder="150000" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal Eksekusi per Bulan (1-31)</label>
+                    <input type="number" id="recDay" min="1" max="31" value="1" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Ambil Dari Aset / Rekening</label>
+                    <select id="recAssetId" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
+                    <select id="recCategory" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('recurringModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Budget Modal -->
     <div id="budgetModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded-2xl shadow-xl">
@@ -813,6 +873,7 @@
                 { id: '1', name: 'Dana Darurat', target: 10000000, current: 2500000, sourceAssetId: '2' }
             ],
             debts: [],
+            recurring: [],
             categories: [
                 'Makanan & Minuman', 'Transportasi', 'Belanja', 'Tagihan & Utilitas', 'Gaji', 'Lainnya'
             ],
@@ -976,6 +1037,7 @@
                     if(!db.categories) db.categories = ['Makanan & Minuman', 'Transportasi', 'Belanja', 'Tagihan & Utilitas', 'Gaji', 'Lainnya'];
                     if(!db.assetCategories) db.assetCategories = ['Kas / Bank', 'Investasi', 'Properti', 'Kendaraan', 'Utang / Liabilitas'];
                     if(!db.debts) db.debts = [];
+                    if(!db.recurring) db.recurring = [];
                     updateAll();
                 } else {
                     try {
@@ -1015,6 +1077,7 @@
             renderAssets();
             renderSavings();
             renderDebts();
+            renderRecurring();
             renderLivingCosts();
             updateStatistics();
             populateAssetSelects();
@@ -1022,6 +1085,7 @@
             populateAssetCategorySelects();
             populateGoalSourceSelects();
             populateBudgetCategorySelects();
+            populateRecurringSelects();
         }
 
         function setDefaultDate() {
@@ -1102,6 +1166,24 @@
                 savingsOptions += `<option value="${g.id}">${g.name} (${formatRupiah(g.current)})</option>`;
             });
             if(selectSavingsTx) selectSavingsTx.innerHTML = savingsOptions;
+        }
+
+        function populateRecurringSelects() {
+            const recAsset = document.getElementById('recAssetId');
+            const recCat = document.getElementById('recCategory');
+            if(!recAsset || !recCat) return;
+
+            let assetOpts = '';
+            db.assets.forEach(a => {
+                assetOpts += `<option value="${a.id}">${a.name} (${formatRupiah(a.balance)})</option>`;
+            });
+            recAsset.innerHTML = assetOpts;
+
+            let catOpts = '';
+            db.categories.forEach(c => {
+                catOpts += `<option value="${c}">${c}</option>`;
+            });
+            recCat.innerHTML = catOpts;
         }
 
         function populateGoalSourceSelects() {
@@ -1214,6 +1296,99 @@
             document.getElementById('assetCategory').value = trimmed;
         }
 
+        // FITUR 1: RECURRING TRANSACTIONS (Rutin Bulanan)
+        function renderRecurring() {
+            let html = '';
+            if(!db.recurring) db.recurring = [];
+
+            db.recurring.forEach(r => {
+                const assetObj = db.assets.find(a => a.id === r.assetId);
+                html += `
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 px-2.5 py-0.5 rounded font-medium">Tanggal ${r.day} tiap bulan</span>
+                                <div class="space-x-1">
+                                    <button onclick="deleteRecurring('${r.id}')" class="text-rose-400 hover:text-rose-600 text-xs p-1" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <h4 class="font-bold text-base mb-1">${r.note}</h4>
+                            <p class="text-xs text-gray-500 mb-2">Sumber: ${assetObj ? assetObj.name : 'Aset Dihapus'} | Kategori: ${r.category}</p>
+                        </div>
+                        <div class="pt-3 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Nominal Rutin</span>
+                            <span class="font-bold text-base text-rose-600">${formatRupiah(r.amount)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            const gridEl = document.getElementById('recurringGrid');
+            if(gridEl) gridEl.innerHTML = html || '<p class="text-gray-400 text-sm col-span-full text-center py-6">Belum ada transaksi rutin bulanan.</p>';
+        }
+
+        function openRecurringModal() {
+            document.getElementById('recId').value = '';
+            document.getElementById('recNote').value = '';
+            document.getElementById('recAmount').value = '';
+            document.getElementById('recDay').value = '1';
+            populateRecurringSelects();
+            document.getElementById('recurringModal').classList.remove('hidden');
+        }
+
+        function saveRecurring(e) {
+            e.preventDefault();
+            const note = document.getElementById('recNote').value.trim();
+            const amount = Number(document.getElementById('recAmount').value);
+            const day = Number(document.getElementById('recDay').value);
+            const assetId = document.getElementById('recAssetId').value;
+            const category = document.getElementById('recCategory').value;
+
+            if(!db.recurring) db.recurring = [];
+            db.recurring.push({ id: Date.now().toString(), note, amount, day, assetId, category });
+            saveData("Tagihan rutin berhasil ditambahkan!");
+            closeModal('recurringModal');
+            renderRecurring();
+        }
+
+        function deleteRecurring(id) {
+            showConfirm('Hapus Rutinitas', 'Hapus tagihan rutin ini?', () => {
+                db.recurring = db.recurring.filter(r => r.id !== id);
+                saveData("Tagihan rutin dihapus.");
+                renderRecurring();
+            });
+        }
+
+        function processAllRecurring() {
+            if(!db.recurring || db.recurring.length === 0) {
+                showToast("Tidak ada tagihan rutin untuk diproses.", "error");
+                return;
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            let count = 0;
+
+            db.recurring.forEach(r => {
+                const assetObj = db.assets.find(a => a.id === r.assetId);
+                if(assetObj) {
+                    assetObj.balance -= Number(r.amount);
+                    db.transactions.unshift({
+                        id: Date.now().toString() + Math.random(),
+                        type: 'expense',
+                        date: todayStr,
+                        note: `[Otomatis Rutin] ${r.note}`,
+                        amount: Number(r.amount),
+                        sourceType: 'asset',
+                        assetId: r.assetId,
+                        category: r.category
+                    });
+                    count++;
+                }
+            });
+
+            saveData(`${count} tagihan rutin berhasil dipotong dari saldo aset!`);
+        }
+
+        // FITUR 2: SMART BUDGET ALERTS (Peringatan Pintar)
         function renderBudgets() {
             let html = '';
             const now = new Date();
@@ -1253,6 +1428,15 @@
                 const remainingPct = b.limit > 0 ? Math.max(0, Math.min(100, Math.round((remaining / b.limit) * 100))) : 0;
                 const usedPct = 100 - remainingPct;
                 const isOver = spent > b.limit;
+                const isNearLimit = usedPct >= 80 && !isOver;
+
+                let alertBadge = '';
+                if(isOver) {
+                    alertBadge = `<span class="bg-rose-600 text-white text-[10px] px-2 py-0.5 rounded font-bold animate-pulse">Budget Terlampaui!</span>`;
+                } else if(isNearLimit) {
+                    alertBadge = `<span class="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded font-bold">Peringatan: Terpakai ${usedPct}%!</span>`;
+                }
+
                 const periodLabel = { weekly: 'Mingguan', monthly: 'Bulanan', yearly: 'Tahunan', custom: `Kustom (${b.startDate} s/d ${b.endDate})` }[b.period] || b.period;
 
                 let breakdownHtml = '';
@@ -1280,9 +1464,9 @@
                     <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <div>
+                                <div class="flex items-center space-x-2">
                                     <span class="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-2 py-0.5 rounded font-medium">${periodLabel}</span>
-                                    <span class="text-xs text-gray-400 ml-2">Dipantau: <strong class="text-gray-700 dark:text-gray-300">${b.category === 'ALL' ? 'Semua Kategori' : b.category}</strong></span>
+                                    ${alertBadge}
                                 </div>
                                 <div class="space-x-1">
                                     <button onclick="editBudget('${b.id}')" class="text-gray-400 hover:text-gray-600 p-1" title="Edit"><i class="fa-solid fa-pen text-xs"></i></button>
@@ -1297,7 +1481,7 @@
                                 <span>Total Awal (100%): <strong>${formatRupiah(b.limit)}</strong></span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
-                                <div class="${isOver ? 'bg-rose-600 animate-pulse' : 'bg-primary-600'} h-2.5 rounded-full transition-all duration-300" style="width: ${remainingPct}%"></div>
+                                <div class="${isOver ? 'bg-rose-600 animate-pulse' : (isNearLimit ? 'bg-amber-500' : 'bg-primary-600')} h-2.5 rounded-full transition-all duration-300" style="width: ${remainingPct}%"></div>
                             </div>
                         </div>
                         
@@ -1753,7 +1937,6 @@
                 const badgeColor = isPayable ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30';
                 const labelType = isPayable ? 'Utang' : 'Piutang';
 
-                // Cek jatuh tempo
                 const isOverdue = d.dueDate < todayStr;
                 const diffDays = Math.ceil((new Date(d.dueDate) - new Date(todayStr)) / (1000 * 60 * 60 * 24));
                 const isNearDue = diffDays >= 0 && diffDays <= 3;
@@ -2401,7 +2584,30 @@
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             dlAnchor.remove();
-            showToast("Data berhasil diekspor!");
+            showToast("Data backup JSON berhasil diunduh!");
+        }
+
+        // FITUR 4: EKSPOR LAPORAN KE CSV / EXCEL
+        function exportCSV() {
+            if(!db.transactions || db.transactions.length === 0) {
+                showToast("Belum ada transaksi untuk diekspor ke CSV.", "error");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,ID,Tanggal,Tipe,Keterangan,Kategori,Jumlah\r\n";
+            db.transactions.forEach(t => {
+                const row = [t.id, t.date, t.type, `"${t.note}"`, `"${t.category || '-'}"`, t.amount];
+                csvContent += row.join(",") + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `laporan_transaksi_dompetku_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            showToast("Laporan CSV berhasil diunduh!");
         }
     </script>
 </body>
