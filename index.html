@@ -790,10 +790,11 @@
             }, 3000);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+// Tambahkan pendeteksi saat halaman kembali aktif di HP (mengatasi pembatasan browser mobile)
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible" && currentUserId) {
+                console.log("Halaman kembali aktif, menyinkronkan ulang data...");
+                initCloudSync(currentUserId);
             }
             setDefaultDate();
 
