@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DompetKu - Aplikasi Pengaturan Keuangan & Budgeting Cloud</title>
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        'name': 'DompetKu Cloud',
+        'short_name': 'DompetKu',
+        'start_url': '.',
+        'display': 'standalone',
+        'background_color': '#0f172a',
+        'theme_color': '#4f46e5',
+        'icons': [{ 'src': 'https://cdn-icons-png.flaticon.com/512/3135/3135706.png', 'sizes': '512x512', 'type': 'image/png' }]
+    }">
+    <meta name="theme-color" content="#4f46e5">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -140,8 +152,11 @@
             <button onclick="switchTab('budgeting')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="budgeting"><i class="fa-solid fa-scale-balanced mr-2"></i>Budgeting</button>
             <button onclick="switchTab('assets')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="assets"><i class="fa-solid fa-vault mr-2"></i>Aset & Dompet</button>
             <button onclick="switchTab('savings')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="savings"><i class="fa-solid fa-bullseye mr-2"></i>Tabungan</button>
-            <button onclick="switchTab('debts')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="debts"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>Utang & Piutang</button>
-            <button onclick="switchTab('statistics')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="statistics"><i class="fa-solid fa-chart-line mr-2"></i>Statistik</button>
+            <button onclick="switchTab('debts')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap relative" data-target="debts">
+                <i class="fa-solid fa-file-invoice-dollar mr-2"></i>Utang & Piutang
+                <span id="debtBadge" class="absolute top-2 right-1 bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full hidden">0</span>
+            </button>
+            <button onclick="switchTab('statistics')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="statistics"><i class="fa-solid fa-chart-line mr-2"></i>Statistik & Tren</button>
             <button onclick="switchTab('calculators')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="calculators"><i class="fa-solid fa-calculator mr-2"></i>Kalkulator</button>
         </div>
     </header>
@@ -318,7 +333,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h2 class="text-lg font-bold">Kelola Utang & Piutang</h2>
-                        <p class="text-xs text-gray-500">Pantau daftar pinjaman, cicilan, atau orang yang berhutang pada Anda.</p>
+                        <p class="text-xs text-gray-500">Pantau daftar pinjaman, cicilan, atau orang yang berhutang pada Anda beserta jatuh temponya.</p>
                     </div>
                     <button onclick="openDebtModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Catat Utang/Piutang</button>
                 </div>
@@ -330,7 +345,7 @@
         <section id="statistics" class="tab-content hidden space-y-6">
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                    <h2 class="text-lg font-bold">Statistik & Laporan Keuangan</h2>
+                    <h2 class="text-lg font-bold">Statistik & Analisis Keuangan</h2>
                     <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center transition">
                         <i class="fa-solid fa-tags mr-1.5"></i>Kelola Kategori Transaksi
                     </button>
@@ -371,9 +386,9 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-gray-50 dark:bg-gray-900/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col items-center">
-                        <h3 id="statChartTitle" class="font-semibold text-sm mb-3">Distribusi Pengeluaran by Kategori</h3>
+                        <h3 id="statChartTitle" class="font-semibold text-sm mb-3">Distribusi Kategori</h3>
                         <div class="w-full max-w-xs h-64 relative flex items-center justify-center">
                             <canvas id="expenseChart"></canvas>
                         </div>
@@ -382,6 +397,12 @@
                         <h3 class="font-semibold text-sm mb-3">Perbandingan Pemasukan vs Pengeluaran</h3>
                         <div class="w-full max-w-xs h-64 relative flex items-center justify-center">
                             <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col items-center md:col-span-1">
+                        <h3 class="font-semibold text-sm mb-3">Tren Arus Kas Bulanan</h3>
+                        <div class="w-full max-w-xs h-64 relative flex items-center justify-center">
+                            <canvas id="trendChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -814,6 +835,7 @@
         let isSignUpMode = false;
         let expenseChartInstance = null;
         let comparisonChartInstance = null;
+        let trendChartInstance = null;
         let unsubscribeFirestore = null;
 
         function showToast(message, type = 'success') {
@@ -1015,9 +1037,9 @@
 
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 if (btn.dataset.target === targetId) {
-                    btn.className = "tab-btn py-3 px-4 text-sm font-medium border-b-2 border-primary-600 text-primary-600 whitespace-nowrap";
+                    btn.className = "tab-btn py-3 px-4 text-sm font-medium border-b-2 border-primary-600 text-primary-600 whitespace-nowrap relative";
                 } else {
-                    btn.className = "tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap";
+                    btn.className = "tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap relative";
                 }
             });
         }
@@ -1275,7 +1297,7 @@
                                 <span>Total Awal (100%): <strong>${formatRupiah(b.limit)}</strong></span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
-                                <div class="${isOver ? 'bg-rose-600' : 'bg-primary-600'} h-2.5 rounded-full transition-all duration-300" style="width: ${remainingPct}%"></div>
+                                <div class="${isOver ? 'bg-rose-600 animate-pulse' : 'bg-primary-600'} h-2.5 rounded-full transition-all duration-300" style="width: ${remainingPct}%"></div>
                             </div>
                         </div>
                         
@@ -1723,17 +1745,36 @@
         function renderDebts() {
             let html = '';
             if(!db.debts) db.debts = [];
-            
+            const todayStr = new Date().toISOString().split('T')[0];
+            let urgentCount = 0;
+
             db.debts.forEach(d => {
                 const isPayable = d.type === 'payable';
                 const badgeColor = isPayable ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30';
                 const labelType = isPayable ? 'Utang' : 'Piutang';
 
+                // Cek jatuh tempo
+                const isOverdue = d.dueDate < todayStr;
+                const diffDays = Math.ceil((new Date(d.dueDate) - new Date(todayStr)) / (1000 * 60 * 60 * 24));
+                const isNearDue = diffDays >= 0 && diffDays <= 3;
+
+                if (isOverdue || isNearDue) urgentCount++;
+
+                let warningBadge = '';
+                if(isOverdue) {
+                    warningBadge = `<span class="bg-rose-600 text-white text-[10px] px-2 py-0.5 rounded font-bold animate-pulse">Jatuh Tempo Terlewat!</span>`;
+                } else if(isNearDue) {
+                    warningBadge = `<span class="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded font-bold">Jatuh Tempo ${diffDays === 0 ? 'Hari Ini' : 'dalam ' + diffDays + ' hari'}</span>`;
+                }
+
                 html += `
                     <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <span class="text-xs px-2 py-0.5 rounded font-medium ${badgeColor}">${labelType}</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs px-2 py-0.5 rounded font-medium ${badgeColor}">${labelType}</span>
+                                    ${warningBadge}
+                                </div>
                                 <div class="space-x-1">
                                     <button onclick="editDebt('${d.id}')" class="text-gray-400 hover:text-gray-600 text-xs p-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
                                     <button onclick="deleteDebt('${d.id}')" class="text-rose-400 hover:text-rose-600 text-xs p-1" title="Hapus"><i class="fa-solid fa-trash"></i></button>
@@ -1742,15 +1783,46 @@
                             <h4 class="font-bold text-base mb-1">${d.person}</h4>
                             <p class="text-xs text-gray-500 mb-3"><i class="fa-solid fa-calendar-days mr-1"></i> Jatuh Tempo: ${d.dueDate}</p>
                         </div>
-                        <div class="pt-3 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-                            <span class="text-xs text-gray-400">Total Nominal</span>
-                            <span class="font-bold text-base ${isPayable ? 'text-rose-600' : 'text-emerald-600'}">${formatRupiah(d.amount)}</span>
+                        <div>
+                            <div class="pt-3 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center mb-3">
+                                <span class="text-xs text-gray-400">Total Nominal</span>
+                                <span class="font-bold text-base ${isPayable ? 'text-rose-600' : 'text-emerald-600'}">${formatRupiah(d.amount)}</span>
+                            </div>
+                            <button onclick="payDebtPartial('${d.id}')" class="w-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 py-1.5 rounded-xl text-xs font-semibold hover:bg-primary-100 transition"><i class="fa-solid fa-check-to-slot mr-1"></i>Bayar Cicilan / Lunas</button>
                         </div>
                     </div>
                 `;
             });
+
             const gridEl = document.getElementById('debtsGrid');
             if(gridEl) gridEl.innerHTML = html || '<p class="text-gray-400 text-sm col-span-full text-center py-6">Belum ada data utang atau piutang.</p>';
+
+            const badgeEl = document.getElementById('debtBadge');
+            if(urgentCount > 0) {
+                badgeEl.innerText = urgentCount;
+                badgeEl.classList.remove('hidden');
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+        }
+
+        function payDebtPartial(id) {
+            const d = db.debts.find(item => item.id === id);
+            if(!d) return;
+            const payVal = prompt(`Masukkan jumlah pembayaran cicilan untuk "${d.person}" (Sisa: ${formatRupiah(d.amount)}):`, d.amount);
+            if(!payVal || isNaN(payVal)) return;
+            const amount = Number(payVal);
+            if(amount <= 0 || amount > d.amount) { showToast('Nominal pembayaran tidak valid.', 'error'); return; }
+
+            d.amount -= amount;
+            if(d.amount <= 0) {
+                db.debts = db.debts.filter(item => item.id !== id);
+                showToast(`Utang/Piutang dengan ${d.person} telah LUNAS!`);
+            } else {
+                showToast(`Cicilan ${formatRupiah(amount)} berhasil dicatat.`);
+            }
+            saveData("Data utang diperbarui!");
+            renderDebts();
         }
 
         function openDebtModal() {
@@ -2128,7 +2200,7 @@
             }
 
             const titleEl = document.getElementById('statChartTitle');
-            titleEl.innerText = typeFilter === 'income' ? 'Distribusi Pemasukan by Kategori' : 'Distribusi Pengeluaran by Kategori';
+            titleEl.innerText = typeFilter === 'income' ? 'Distribusi Pemasukan' : 'Distribusi Pengeluaran';
 
             let filteredTx = [...db.transactions];
             const now = new Date();
@@ -2171,6 +2243,7 @@
 
             renderExpenseChart(catMap, typeFilter);
             renderComparisonChart(totalInc, totalExp);
+            renderTrendChart();
         }
 
         function renderExpenseChart(catMap, type) {
@@ -2193,7 +2266,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
                 }
             });
         }
@@ -2217,6 +2290,39 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+            const monthlyInc = new Array(12).fill(0);
+            const monthlyExp = new Array(12).fill(0);
+
+            db.transactions.forEach(t => {
+                const d = new Date(t.date);
+                const m = d.getMonth();
+                if(t.type === 'income') monthlyInc[m] += Number(t.amount);
+                if(t.type === 'expense') monthlyExp[m] += Number(t.amount);
+            });
+
+            if(trendChartInstance) trendChartInstance.destroy();
+
+            trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Masuk', data: monthlyInc, borderColor: '#10b981', tension: 0.3, fill: false },
+                        { label: 'Keluar', data: monthlyExp, borderColor: '#f43f5e', tension: 0.3, fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
                     scales: { y: { beginAtZero: true } }
                 }
             });
