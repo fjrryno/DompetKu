@@ -64,8 +64,8 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen pb-20">
 
-    <!-- Toast Notification Overlay -->
-   <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] transform -translate-y-28 opacity-0 transition-all duration-300 pointer-events-none">
+    <!-- Toast Notification Overlay (z-[9999] agar selalu tampil paling depan menimpa dialog/login) -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] transform -translate-y-28 opacity-0 transition-all duration-300 pointer-events-none">
         <div id="toastContent" class="bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 text-sm font-medium">
             <i id="toastIcon" class="fa-solid fa-circle-check text-lg"></i>
             <span id="toastMessage">Aksi berhasil disimpan!</span>
@@ -80,25 +80,26 @@
                     <i class="fa-solid fa-wallet text-2xl"></i>
                 </div>
                 <h2 class="text-2xl font-bold">DompetKu Cloud</h2>
-                <p class="text-xs text-gray-500 mt-1">Sinkronisasi data keuangan antar Laptop, Tablet & HP secara real-time.</p>
+                <p class="text-xs text-gray-500 mt-1">Sinkronisasi data keuangan antar perangkat secara real-time.</p>
             </div>
             
             <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Email</label>
-                    <input type="email" id="authEmail" placeholder="nama@email.com" required class="w-full p-3 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <input type="email" id="authEmail" placeholder="nama@email.com" required class="w-full p-3 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-primary-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Password</label>
-                    <input type="password" id="authPassword" placeholder="••••••••" required class="w-full p-3 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <input type="password" id="authPassword" placeholder="••••••••" required class="w-full p-3 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-primary-500">
                 </div>
+                
                 <!-- Tombol Lupa Password -->
                 <div class="text-right mt-1">
-                    <button type="button" onclick="handleForgotPassword()" class="text-xs text-primary-600 hover:underline">Lupa password?</button>
+                    <button type="button" onclick="handleForgotPassword()" class="text-xs text-primary-600 hover:underline font-medium">Lupa password?</button>
                 </div>
 
                 <div id="authError" class="text-xs text-rose-600 font-medium hidden"></div>
-                <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm shadow-md transition">Masuk / Login</button>
+                <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-white font-semibold rounded-xl text-sm shadow-md transition">Masuk / Login</button>
             </form>
             
             <div class="mt-6 text-center text-xs">
@@ -121,13 +122,13 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="exportData()" title="Ekspor Data JSON" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm">
+                <button onclick="exportData()" title="Ekspor Data JSON" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition">
                     <i class="fa-solid fa-download"></i>
                 </button>
-                <button onclick="handleLogout()" title="Keluar Akun" class="p-2 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 hover:bg-rose-100 text-sm">
+                <button onclick="handleLogout()" title="Keluar Akun" class="p-2 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 hover:bg-rose-100 text-sm transition">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
-                <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                     <i id="themeIcon" class="fa-solid fa-moon"></i>
                 </button>
             </div>
@@ -186,9 +187,9 @@
                     <div>
                         <h3 class="font-bold text-base mb-3">Aksi Cepat</h3>
                         <div class="space-y-2">
-                            <button onclick="openTransactionModal('income')" class="w-full py-2.5 px-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium rounded-xl text-sm flex items-center justify-center hover:bg-emerald-100 transition"><i class="fa-solid fa-plus-circle mr-2"></i>Catat Pemasukan</button>
-                            <button onclick="openTransactionModal('expense')" class="w-full py-2.5 px-4 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-medium rounded-xl text-sm flex items-center justify-center hover:bg-rose-100 transition"><i class="fa-solid fa-minus-circle mr-2"></i>Catat Pengeluaran</button>
-                            <button onclick="openTransactionModal('transfer')" class="w-full py-2.5 px-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium rounded-xl text-sm flex items-center justify-center hover:bg-indigo-100 transition"><i class="fa-solid fa-right-left mr-2"></i>Transfer Antar Aset</button>
+                            <button onclick="openTransactionModal('income')" class="w-full py-2.5 px-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium rounded-xl text-sm flex items-center justify-center hover:bg-emerald-100 transition active:scale-[0.98]"><i class="fa-solid fa-plus-circle mr-2"></i>Catat Pemasukan</button>
+                            <button onclick="openTransactionModal('expense')" class="w-full py-2.5 px-4 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-medium rounded-xl text-sm flex items-center justify-center hover:bg-rose-100 transition active:scale-[0.98]"><i class="fa-solid fa-minus-circle mr-2"></i>Catat Pengeluaran</button>
+                            <button onclick="openTransactionModal('transfer')" class="w-full py-2.5 px-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium rounded-xl text-sm flex items-center justify-center hover:bg-indigo-100 transition active:scale-[0.98]"><i class="fa-solid fa-right-left mr-2"></i>Transfer Antar Aset</button>
                         </div>
                     </div>
                 </div>
@@ -225,9 +226,9 @@
                         <p class="text-xs text-gray-500">Semua riwayat arus kas masuk dan keluar.</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center"><i class="fa-solid fa-tags mr-1.5"></i>Kelola Kategori</button>
-                        <button onclick="openTransactionModal('income')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i>Pemasukan</button>
-                        <button onclick="openTransactionModal('expense')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm"><i class="fa-solid fa-minus mr-1"></i>Pengeluaran</button>
+                        <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center transition"><i class="fa-solid fa-tags mr-1.5"></i>Kelola Kategori</button>
+                        <button onclick="openTransactionModal('income')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Pemasukan</button>
+                        <button onclick="openTransactionModal('expense')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-minus mr-1"></i>Pengeluaran</button>
                     </div>
                 </div>
 
@@ -270,7 +271,7 @@
                         <h2 class="text-lg font-bold">Manajemen Budgeting (Sisa Saldo & Pengurangan Transaksi)</h2>
                         <p class="text-xs text-gray-500">Budget dimulai dari 100% dan akan terus berkurang seiring adanya pengeluaran transaksi.</p>
                     </div>
-                    <button onclick="openBudgetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i>Buat Budget Baru</button>
+                    <button onclick="openBudgetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Buat Budget Baru</button>
                 </div>
 
                 <div id="budgetGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -286,10 +287,10 @@
                         <p class="text-xs text-gray-500">Kelola rekening bank, dompet digital, investasi, atau utang Anda.</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="openAssetCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center">
+                        <button onclick="openAssetCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center transition">
                             <i class="fa-solid fa-vault mr-1.5"></i>Kelola Kategori Aset
                         </button>
-                        <button onclick="openAssetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i>Tambah Aset</button>
+                        <button onclick="openAssetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Tambah Aset</button>
                     </div>
                 </div>
                 <div id="assetCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -304,7 +305,7 @@
                         <h2 class="text-lg font-bold">Target Tabungan (Savings Goals)</h2>
                         <p class="text-xs text-gray-500">Wujudkan impian finansial Anda dengan menabung terarah.</p>
                     </div>
-                    <button onclick="openGoalModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i>Target Baru</button>
+                    <button onclick="openGoalModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Target Baru</button>
                 </div>
                 <div id="savingsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
@@ -315,7 +316,7 @@
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                     <h2 class="text-lg font-bold">Statistik & Laporan Keuangan</h2>
-                    <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center">
+                    <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center transition">
                         <i class="fa-solid fa-tags mr-1.5"></i>Kelola Kategori Transaksi
                     </button>
                 </div>
@@ -323,7 +324,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Periode Waktu</label>
-                        <select id="statPeriod" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <select id="statPeriod" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none">
                             <option value="all">Semua Waktu</option>
                             <option value="this_month" selected>Bulan Ini</option>
                             <option value="last_30">30 Hari Terakhir</option>
@@ -332,25 +333,25 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Tipe Transaksi</label>
-                        <select id="statTypeFilter" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <select id="statTypeFilter" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none">
                             <option value="expense">Pengeluaran</option>
                             <option value="income">Pemasukan</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
-                        <select id="statCategoryFilter" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <select id="statCategoryFilter" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none">
                             <option value="">Semua Kategori</option>
                         </select>
                     </div>
                     <div id="customDateContainer" class="hidden sm:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
-                            <input type="date" id="statStartDate" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                            <input type="date" id="statStartDate" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
-                            <input type="date" id="statEndDate" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                            <input type="date" id="statEndDate" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none">
                         </div>
                     </div>
                 </div>
@@ -375,22 +376,22 @@
         <!-- 7. CALCULATORS TAB -->
         <section id="calculators" class="tab-content hidden space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button onclick="switchCalc('compound')" id="btnCalcCompound" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-primary-500 shadow-sm">
+                <button onclick="switchCalc('compound')" id="btnCalcCompound" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-primary-500 shadow-sm transition">
                     <i class="fa-solid fa-chart-line text-primary-600 mb-2 text-lg"></i>
                     <h3 class="font-bold text-sm">Bunga Majemuk</h3>
                     <p class="text-xs text-gray-500 mt-1">Pertumbuhan aset investasi.</p>
                 </button>
-                <button onclick="switchCalc('living')" id="btnCalcLiving" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <button onclick="switchCalc('living')" id="btnCalcLiving" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition">
                     <i class="fa-solid fa-basket-shopping text-primary-600 mb-2 text-lg"></i>
                     <h3 class="font-bold text-sm">Biaya Hidup Bulanan</h3>
                     <p class="text-xs text-gray-500 mt-1">Estimasi pengeluaran rutin.</p>
                 </button>
-                <button onclick="switchCalc('loan')" id="btnCalcLoan" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <button onclick="switchCalc('loan')" id="btnCalcLoan" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition">
                     <i class="fa-solid fa-file-invoice-dollar text-primary-600 mb-2 text-lg"></i>
                     <h3 class="font-bold text-sm">Cicilan Pinjaman</h3>
                     <p class="text-xs text-gray-500 mt-1">Hitung cicilan KPR/kendaraan.</p>
                 </button>
-                <button onclick="switchCalc('retirement')" id="btnCalcRetirement" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <button onclick="switchCalc('retirement')" id="btnCalcRetirement" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition">
                     <i class="fa-solid fa-umbrella-beach text-primary-600 mb-2 text-lg"></i>
                     <h3 class="font-bold text-sm">Target Pensiun</h3>
                     <p class="text-xs text-gray-500 mt-1">Rencanakan dana masa depan.</p>
@@ -418,7 +419,7 @@
                         <input type="number" id="cYears" value="10" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     </div>
                 </div>
-                <button onclick="calculateCompound()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Hitung Proyeksi</button>
+                <button onclick="calculateCompound()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm transition active:scale-[0.98]">Hitung Proyeksi</button>
                 <div id="cResult" class="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 rounded-xl text-sm hidden"></div>
             </div>
 
@@ -429,7 +430,7 @@
                         <h3 class="font-bold text-base">Kalkulator Estimasi Biaya Hidup 1 Bulan</h3>
                         <p class="text-xs text-gray-500">Sesuaikan item pengeluaran dan nominalnya.</p>
                     </div>
-                    <button onclick="openLivingItemModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-3.5 py-2 rounded-xl text-xs font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i>Tambah Item</button>
+                    <button onclick="openLivingItemModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-3.5 py-2 rounded-xl text-xs font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Tambah Item</button>
                 </div>
                 <div class="overflow-x-auto mb-4">
                     <table class="w-full text-left border-collapse text-sm">
@@ -448,7 +449,7 @@
                         <span class="text-xs text-primary-700 dark:text-primary-300 block font-medium">Total Estimasi Biaya Hidup Bulanan:</span>
                         <h4 id="livingTotalAmount" class="text-2xl font-bold text-primary-800 dark:text-primary-200">Rp 0</h4>
                     </div>
-                    <button onclick="applyLivingCostToBudget()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium shadow-sm"><i class="fa-solid fa-scale-balanced mr-1.5"></i>Jadikan Budget Baru (Mulai 100%)</button>
+                    <button onclick="applyLivingCostToBudget()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium shadow-sm transition"><i class="fa-solid fa-scale-balanced mr-1.5"></i>Jadikan Budget Baru (Mulai 100%)</button>
                 </div>
             </div>
 
@@ -469,7 +470,7 @@
                         <input type="number" id="lMonths" value="12" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     </div>
                 </div>
-                <button onclick="calculateLoan()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Hitung Cicilan</button>
+                <button onclick="calculateLoan()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm transition">Hitung Cicilan</button>
                 <div id="lResult" class="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 rounded-xl text-sm hidden"></div>
             </div>
 
@@ -486,7 +487,7 @@
                         <input type="number" id="rYears" value="20" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     </div>
                 </div>
-                <button onclick="calculateRetirement()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Hitung Kebutuhan</button>
+                <button onclick="calculateRetirement()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm transition">Hitung Kebutuhan</button>
                 <div id="rResult" class="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 rounded-xl text-sm hidden"></div>
             </div>
         </section>
@@ -541,8 +542,8 @@
                     <select id="txCategory" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></select>
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('txModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium">Simpan</button>
+                    <button type="button" onclick="closeModal('txModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Simpan</button>
                 </div>
             </form>
         </div>
@@ -588,8 +589,8 @@
                     </select>
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('budgetModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium">Simpan</button>
+                    <button type="button" onclick="closeModal('budgetModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Simpan</button>
                 </div>
             </form>
         </div>
@@ -604,8 +605,8 @@
             <h3 id="confirmTitle" class="font-bold text-base mb-1">Konfirmasi Aksi</h3>
             <p id="confirmMessage" class="text-xs text-gray-500 mb-6">Apakah Anda yakin ingin melanjutkan aksi ini?</p>
             <div class="flex space-x-3">
-                <button type="button" onclick="closeConfirmModal(false)" class="flex-1 py-2.5 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 font-medium">Batal</button>
-                <button type="button" id="confirmYesBtn" class="flex-1 py-2.5 text-sm rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium">Ya, Lanjutkan</button>
+                <button type="button" onclick="closeConfirmModal(false)" class="flex-1 py-2.5 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 font-medium transition">Batal</button>
+                <button type="button" id="confirmYesBtn" class="flex-1 py-2.5 text-sm rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium transition">Ya, Lanjutkan</button>
             </div>
         </div>
     </div>
@@ -632,8 +633,8 @@
                     <input type="number" id="assetBalance" placeholder="1000000" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('assetModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium">Simpan</button>
+                    <button type="button" onclick="closeModal('assetModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Simpan</button>
                 </div>
             </form>
         </div>
@@ -662,8 +663,8 @@
                     <select id="goalSourceAssetId" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></select>
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('goalModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium">Simpan</button>
+                    <button type="button" onclick="closeModal('goalModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Simpan</button>
                 </div>
             </form>
         </div>
@@ -684,8 +685,8 @@
                     <input type="number" id="livingItemAmount" placeholder="1500000" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('livingItemModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium">Simpan</button>
+                    <button type="button" onclick="closeModal('livingItemModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Simpan</button>
                 </div>
             </form>
         </div>
@@ -703,7 +704,7 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">Nama Kategori Baru</label>
                     <input type="text" id="newCatName" placeholder="Contoh: Langganan Netflix, Hiburan" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 </div>
-                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-xl text-sm font-medium">Tambah Kategori</button>
+                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-xl text-sm font-medium transition">Tambah Kategori</button>
             </form>
             <hr class="border-gray-100 dark:border-gray-700 my-4">
             <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Daftar Kategori Tersedia</h4>
@@ -723,7 +724,7 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">Nama Kategori Aset Baru</label>
                     <input type="text" id="newAssetCatName" placeholder="Contoh: Crypto, Emas, Piutang" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 </div>
-                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-xl text-sm font-medium">Tambah Kategori Aset</button>
+                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-xl text-sm font-medium transition">Tambah Kategori Aset</button>
             </form>
             <hr class="border-gray-100 dark:border-gray-700 my-4">
             <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Daftar Kategori Aset Tersedia</h4>
@@ -787,14 +788,13 @@
             setTimeout(() => {
                 toast.classList.remove('opacity-100', 'translate-y-0');
                 toast.classList.add('opacity-0', '-translate-y-28');
-            }, 3000);
+            }, 3500);
         }
 
-// Tambahkan pendeteksi saat halaman kembali aktif di HP (mengatasi pembatasan browser mobile)
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "visible" && currentUserId) {
-                console.log("Halaman kembali aktif, menyinkronkan ulang data...");
-                initCloudSync(currentUserId);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun';
             }
             setDefaultDate();
 
@@ -814,6 +814,14 @@
                     });
                 }
             }, 100);
+
+            // Listener visibilitas untuk auto-sync saat kembali aktif di browser mobile/desktop site
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "visible" && currentUserId) {
+                    console.log("Aplikasi kembali aktif, memuat ulang sinkronisasi...");
+                    initCloudSync(currentUserId);
+                }
+            });
         });
 
         function toggleAuthMode() {
@@ -850,7 +858,7 @@
             }
         }
 
-async function handleForgotPassword() {
+        async function handleForgotPassword() {
             const email = document.getElementById('authEmail').value.trim();
             const errDiv = document.getElementById('authError');
             errDiv.classList.add('hidden');
@@ -890,6 +898,8 @@ async function handleForgotPassword() {
         function initCloudSync(uid) {
             const docRef = window.FB.doc(window.FB.dbCloud, "usersData", uid);
             
+            if(unsubscribeFirestore) unsubscribeFirestore();
+
             unsubscribeFirestore = window.FB.onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     db = docSnap.data();
@@ -1645,7 +1655,7 @@ async function handleForgotPassword() {
                         </div>
                         <div class="flex justify-between items-center text-xs">
                             <span class="font-semibold text-primary-600">${pct}% Tercapai</span>
-                            <button onclick="addSavingsAmount('${g.id}')" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-3 py-1 rounded-lg font-medium hover:bg-primary-100">+ Tambah Tabungan</button>
+                            <button onclick="addSavingsAmount('${g.id}')" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-3 py-1 rounded-lg font-medium hover:bg-primary-100 transition">+ Tambah Tabungan</button>
                         </div>
                     </div>
                 `;
@@ -2069,10 +2079,10 @@ async function handleForgotPassword() {
         function switchCalc(type) {
             ['compound', 'living', 'loan', 'retirement'].forEach(t => {
                 document.getElementById(`calc${t.charAt(0).toUpperCase() + t.slice(1)}Box`).classList.add('hidden');
-                document.getElementById(`btnCalc${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700";
+                document.getElementById(`btnCalc${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition";
             });
             document.getElementById(`calc${type.charAt(0).toUpperCase() + type.slice(1)}Box`).classList.remove('hidden');
-            document.getElementById(`btnCalc${type.charAt(0).toUpperCase() + type.slice(1)}`).className = "calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-primary-500 shadow-sm";
+            document.getElementById(`btnCalc${type.charAt(0).toUpperCase() + type.slice(1)}`).className = "calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-primary-500 shadow-sm transition";
         }
 
         function calculateCompound() {
