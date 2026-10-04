@@ -140,6 +140,7 @@
             <button onclick="switchTab('budgeting')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="budgeting"><i class="fa-solid fa-scale-balanced mr-2"></i>Budgeting</button>
             <button onclick="switchTab('assets')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="assets"><i class="fa-solid fa-vault mr-2"></i>Aset & Dompet</button>
             <button onclick="switchTab('savings')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="savings"><i class="fa-solid fa-bullseye mr-2"></i>Tabungan</button>
+            <button onclick="switchTab('debts')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="debts"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>Utang & Piutang</button>
             <button onclick="switchTab('statistics')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="statistics"><i class="fa-solid fa-chart-line mr-2"></i>Statistik</button>
             <button onclick="switchTab('calculators')" class="tab-btn py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 whitespace-nowrap" data-target="calculators"><i class="fa-solid fa-calculator mr-2"></i>Kalkulator</button>
         </div>
@@ -308,6 +309,20 @@
                     <button onclick="openGoalModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Target Baru</button>
                 </div>
                 <div id="savingsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- 5.5 DEBTS & LOANS TAB -->
+        <section id="debts" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold">Kelola Utang & Piutang</h2>
+                        <p class="text-xs text-gray-500">Pantau daftar pinjaman, cicilan, atau orang yang berhutang pada Anda.</p>
+                    </div>
+                    <button onclick="openDebtModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Catat Utang/Piutang</button>
+                </div>
+                <div id="debtsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
         </section>
 
@@ -670,6 +685,39 @@
         </div>
     </div>
 
+    <!-- Debt Modal -->
+    <div id="debtModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded-2xl shadow-xl">
+            <h3 id="debtModalTitle" class="text-base font-bold mb-4">Catat Utang / Piutang</h3>
+            <form id="debtForm" onsubmit="saveDebt(event)" class="space-y-4">
+                <input type="hidden" id="debtId">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Tipe</label>
+                    <select id="debtType" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                        <option value="payable">Utang (Saya yang meminjam)</option>
+                        <option value="receivable">Piutang (Orang lain meminjam ke saya)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Nama Pemberi / Peminjam</label>
+                    <input type="text" id="debtPerson" placeholder="Contoh: Bank / Teman Kantor" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Total Nominal (Rp)</label>
+                    <input type="number" id="debtAmount" placeholder="5000000" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal Jatuh Tempo</label>
+                    <input type="date" id="debtDueDate" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('debtModal')" class="px-4 py-2 text-sm rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Living Cost Item Modal -->
     <div id="livingItemModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded-2xl shadow-xl">
@@ -743,6 +791,7 @@
             savings: [
                 { id: '1', name: 'Dana Darurat', target: 10000000, current: 2500000, sourceAssetId: '2' }
             ],
+            debts: [],
             categories: [
                 'Makanan & Minuman', 'Transportasi', 'Belanja', 'Tagihan & Utilitas', 'Gaji', 'Lainnya'
             ],
@@ -904,6 +953,7 @@
                     db = docSnap.data();
                     if(!db.categories) db.categories = ['Makanan & Minuman', 'Transportasi', 'Belanja', 'Tagihan & Utilitas', 'Gaji', 'Lainnya'];
                     if(!db.assetCategories) db.assetCategories = ['Kas / Bank', 'Investasi', 'Properti', 'Kendaraan', 'Utang / Liabilitas'];
+                    if(!db.debts) db.debts = [];
                     updateAll();
                 } else {
                     try {
@@ -942,6 +992,7 @@
             renderBudgets();
             renderAssets();
             renderSavings();
+            renderDebts();
             renderLivingCosts();
             updateStatistics();
             populateAssetSelects();
@@ -1667,6 +1718,95 @@
                 `;
             });
             document.getElementById('savingsGrid').innerHTML = html || '<p class="text-gray-400 text-sm col-span-full text-center py-6">Belum ada target tabungan.</p>';
+        }
+
+        function renderDebts() {
+            let html = '';
+            if(!db.debts) db.debts = [];
+            
+            db.debts.forEach(d => {
+                const isPayable = d.type === 'payable';
+                const badgeColor = isPayable ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30';
+                const labelType = isPayable ? 'Utang' : 'Piutang';
+
+                html += `
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs px-2 py-0.5 rounded font-medium ${badgeColor}">${labelType}</span>
+                                <div class="space-x-1">
+                                    <button onclick="editDebt('${d.id}')" class="text-gray-400 hover:text-gray-600 text-xs p-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteDebt('${d.id}')" class="text-rose-400 hover:text-rose-600 text-xs p-1" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <h4 class="font-bold text-base mb-1">${d.person}</h4>
+                            <p class="text-xs text-gray-500 mb-3"><i class="fa-solid fa-calendar-days mr-1"></i> Jatuh Tempo: ${d.dueDate}</p>
+                        </div>
+                        <div class="pt-3 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Total Nominal</span>
+                            <span class="font-bold text-base ${isPayable ? 'text-rose-600' : 'text-emerald-600'}">${formatRupiah(d.amount)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            const gridEl = document.getElementById('debtsGrid');
+            if(gridEl) gridEl.innerHTML = html || '<p class="text-gray-400 text-sm col-span-full text-center py-6">Belum ada data utang atau piutang.</p>';
+        }
+
+        function openDebtModal() {
+            document.getElementById('debtId').value = '';
+            document.getElementById('debtType').value = 'payable';
+            document.getElementById('debtPerson').value = '';
+            document.getElementById('debtAmount').value = '';
+            document.getElementById('debtDueDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('debtModalTitle').innerText = 'Catat Utang / Piutang';
+            document.getElementById('debtModal').classList.remove('hidden');
+        }
+
+        function editDebt(id) {
+            const d = db.debts.find(item => item.id === id);
+            if(!d) return;
+            document.getElementById('debtId').value = d.id;
+            document.getElementById('debtType').value = d.type;
+            document.getElementById('debtPerson').value = d.person;
+            document.getElementById('debtAmount').value = d.amount;
+            document.getElementById('debtDueDate').value = d.dueDate;
+            document.getElementById('debtModalTitle').innerText = 'Edit Utang / Piutang';
+            document.getElementById('debtModal').classList.remove('hidden');
+        }
+
+        function saveDebt(e) {
+            e.preventDefault();
+            const id = document.getElementById('debtId').value;
+            const type = document.getElementById('debtType').value;
+            const person = document.getElementById('debtPerson').value.trim();
+            const amount = Number(document.getElementById('debtAmount').value);
+            const dueDate = document.getElementById('debtDueDate').value;
+
+            if(!db.debts) db.debts = [];
+
+            if(id) {
+                const d = db.debts.find(item => item.id === id);
+                if(d) {
+                    d.type = type;
+                    d.person = person;
+                    d.amount = amount;
+                    d.dueDate = dueDate;
+                }
+            } else {
+                db.debts.push({ id: Date.now().toString(), type, person, amount, dueDate });
+            }
+            saveData("Data utang/piutang berhasil disimpan!");
+            closeModal('debtModal');
+            renderDebts();
+        }
+
+        function deleteDebt(id) {
+            showConfirm('Hapus Data', 'Apakah Anda yakin ingin menghapus data utang/piutang ini?', () => {
+                db.debts = db.debts.filter(d => d.id !== id);
+                saveData("Data berhasil dihapus.");
+                renderDebts();
+            });
         }
 
         function openTransactionModal(type) {
