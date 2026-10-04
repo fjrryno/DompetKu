@@ -898,17 +898,30 @@
         function initCloudSync(uid) {
             const docRef = window.FB.doc(window.FB.dbCloud, "usersData", uid);
             
+function initCloudSync(uid) {
+            const docRef = window.FB.doc(window.FB.dbCloud, "usersData", uid);
+            
             if(unsubscribeFirestore) unsubscribeFirestore();
 
-            unsubscribeFirestore = window.FB.onSnapshot(docRef, (docSnap) => {
+            unsubscribeFirestore = window.FB.onSnapshot(docRef, async (docSnap) => {
                 if (docSnap.exists()) {
+                    // Jika data di cloud ada, gunakan data dari cloud
                     db = docSnap.data();
                     if(!db.categories) db.categories = ['Makanan & Minuman', 'Transportasi', 'Belanja', 'Tagihan & Utilitas', 'Gaji', 'Lainnya'];
                     if(!db.assetCategories) db.assetCategories = ['Kas / Bank', 'Investasi', 'Properti', 'Kendaraan', 'Utang / Liabilitas'];
                     updateAll();
                 } else {
-                    saveDataToCloud();
+                    // Jika dokumen di cloud sama sekali belum ada, simpan data default pertama kali ke cloud
+                    try {
+                        await window.FB.setDoc(docRef, db);
+                        console.log("Dokumen awal berhasil dibuat di cloud.");
+                    } catch (err) {
+                        console.error("Gagal membuat dokumen awal:", err);
+                    }
+                    updateAll();
                 }
+            }, (error) => {
+                console.error("Kesalahan sinkronisasi Firestore:", error);
             });
         }
 
