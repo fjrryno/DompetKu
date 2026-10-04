@@ -76,7 +76,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen pb-20">
 
-    <!-- Toast Notification Overlay (z-[9999] agar selalu tampil paling depan menimpa dialog/login) -->
+    <!-- Toast Notification Overlay -->
     <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] transform -translate-y-28 opacity-0 transition-all duration-300 pointer-events-none">
         <div id="toastContent" class="bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 text-sm font-medium">
             <i id="toastIcon" class="fa-solid fa-circle-check text-lg"></i>
@@ -105,7 +105,6 @@
                     <input type="password" id="authPassword" placeholder="••••••••" required class="w-full p-3 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-primary-500">
                 </div>
                 
-                <!-- Tombol Lupa Password -->
                 <div class="text-right mt-1">
                     <button type="button" onclick="handleForgotPassword()" class="text-xs text-primary-600 hover:underline font-medium">Lupa password?</button>
                 </div>
@@ -134,7 +133,6 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <!-- Dropdown Ekspor Lanjutan -->
                 <div class="relative group">
                     <button class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition flex items-center space-x-1" title="Menu Ekspor Laporan">
                         <i class="fa-solid fa-download"></i>
@@ -288,7 +286,7 @@
             </div>
         </section>
 
-        <!-- 2.5 RECURRING TRANSACTIONS TAB (Fitur 1) -->
+        <!-- 2.5 RECURRING TRANSACTIONS TAB -->
         <section id="recurring" class="tab-content hidden space-y-6">
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -296,7 +294,8 @@
                         <h2 class="text-lg font-bold">Transaksi Rutin Bulanan (Recurring)</h2>
                         <p class="text-xs text-gray-500">Otomatiskan pengeluaran/pemasukan berulang setiap bulan (seperti kos, Netflix, internet).</p>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center transition"><i class="fa-solid fa-tags mr-1.5"></i>Tambah Kategori</button>
                         <button onclick="processAllRecurring()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-medium shadow-sm transition flex items-center"><i class="fa-solid fa-play mr-1.5"></i>Proses Tagihan Bulan Ini</button>
                         <button onclick="openRecurringModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-xs font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Tambah Rutin Baru</button>
                     </div>
@@ -313,7 +312,10 @@
                         <h2 class="text-lg font-bold">Manajemen Budgeting & Peringatan Pintar (Smart Alerts)</h2>
                         <p class="text-xs text-gray-500">Budget dimulai dari 100% dan berkurang otomatis. Memberikan peringatan dini saat mendekati batas.</p>
                     </div>
-                    <button onclick="openBudgetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Buat Budget Baru</button>
+                    <div class="flex gap-2">
+                        <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center transition"><i class="fa-solid fa-tags mr-1.5"></i>Tambah Kategori</button>
+                        <button onclick="openBudgetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Buat Budget Baru</button>
+                    </div>
                 </div>
 
                 <div id="budgetGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -395,7 +397,10 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-medium text-gray-500">Kategori</label>
+                            <button onclick="openCategoryManagerModal()" class="text-[10px] text-primary-600 dark:text-primary-400 font-semibold hover:underline">+ Kategori</button>
+                        </div>
                         <select id="statCategoryFilter" onchange="updateStatistics()" class="w-full p-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none">
                             <option value="">Semua Kategori</option>
                         </select>
@@ -611,7 +616,7 @@
         </div>
     </div>
 
-    <!-- Recurring Modal (Fitur 1) -->
+    <!-- Recurring Modal -->
     <div id="recurringModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded-2xl shadow-xl">
             <h3 id="recurringModalTitle" class="text-base font-bold mb-4">Tambah Tagihan Rutin Bulanan</h3>
@@ -634,7 +639,10 @@
                     <select id="recAssetId" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-medium text-gray-500">Kategori</label>
+                        <button type="button" onclick="promptAddCategoryInModal()" class="text-xs text-primary-600 dark:text-primary-400 font-semibold hover:underline">+ Tambah Kategori Baru</button>
+                    </div>
                     <select id="recCategory" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></select>
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
@@ -679,7 +687,10 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Kategori Transaksi yang Dipantau</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-medium text-gray-500">Kategori Transaksi yang Dipantau</label>
+                        <button type="button" onclick="promptAddCategoryInModal()" class="text-xs text-primary-600 dark:text-primary-400 font-semibold hover:underline">+ Tambah Kategori Baru</button>
+                    </div>
                     <select id="budgetCategory" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                         <option value="ALL">Semua Kategori Pengeluaran</option>
                     </select>
@@ -1206,26 +1217,54 @@
 
         function populateCategorySelects() {
             const txCatSelect = document.getElementById('txCategory');
-            if(!txCatSelect) return;
-            const currentTxCat = txCatSelect.value;
-            let txCatHtml = '';
-            db.categories.forEach(c => {
-                txCatHtml += `<option value="${c}">${c}</option>`;
-            });
-            txCatSelect.innerHTML = txCatHtml;
-            if(currentTxCat && db.categories.includes(currentTxCat)) {
-                txCatSelect.value = currentTxCat;
+            if(txCatSelect) {
+                const currentTxCat = txCatSelect.value;
+                let txCatHtml = '';
+                db.categories.forEach(c => {
+                    txCatHtml += `<option value="${c}">${c}</option>`;
+                });
+                txCatSelect.innerHTML = txCatHtml;
+                if(currentTxCat && db.categories.includes(currentTxCat)) {
+                    txCatSelect.value = currentTxCat;
+                }
             }
 
             const statCatSelect = document.getElementById('statCategoryFilter');
-            if(!statCatSelect) return;
-            const currentStatCat = statCatSelect.value;
-            let statCatHtml = '<option value="">Semua Kategori</option>';
-            db.categories.forEach(c => {
-                statCatHtml += `<option value="${c}">${c}</option>`;
-            });
-            statCatSelect.innerHTML = statCatHtml;
-            statCatSelect.value = currentStatCat;
+            if(statCatSelect) {
+                const currentStatCat = statCatSelect.value;
+                let statCatHtml = '<option value="">Semua Kategori</option>';
+                db.categories.forEach(c => {
+                    statCatHtml += `<option value="${c}">${c}</option>`;
+                });
+                statCatSelect.innerHTML = statCatHtml;
+                statCatSelect.value = currentStatCat;
+            }
+
+            const recCatSelect = document.getElementById('recCategory');
+            if(recCatSelect) {
+                const currentRecCat = recCatSelect.value;
+                let recCatHtml = '';
+                db.categories.forEach(c => {
+                    recCatHtml += `<option value="${c}">${c}</option>`;
+                });
+                recCatSelect.innerHTML = recCatHtml;
+                if(currentRecCat && db.categories.includes(currentRecCat)) {
+                    recCatSelect.value = currentRecCat;
+                }
+            }
+
+            const budgetCatSelect = document.getElementById('budgetCategory');
+            if(budgetCatSelect) {
+                const currentBudgetCat = budgetCatSelect.value;
+                let budgetCatHtml = '<option value="ALL">Semua Kategori Pengeluaran</option>';
+                db.categories.forEach(c => {
+                    budgetCatHtml += `<option value="${c}">${c}</option>`;
+                });
+                budgetCatSelect.innerHTML = budgetCatHtml;
+                if(currentBudgetCat) {
+                    budgetCatSelect.value = currentBudgetCat;
+                }
+            }
         }
 
         function populateAssetCategorySelects() {
@@ -1278,7 +1317,14 @@
             db.categories.push(trimmed);
             saveData("Kategori baru berhasil ditambahkan!");
             populateCategorySelects();
-            document.getElementById('txCategory').value = trimmed;
+            
+            // Otomatis pilih kategori yang baru dibuat di dropdown aktif saat ini jika ada
+            const txCat = document.getElementById('txCategory');
+            if(txCat && !txCat.closest('#txModal').classList.contains('hidden')) txCat.value = trimmed;
+            const recCat = document.getElementById('recCategory');
+            if(recCat && !recCat.closest('#recurringModal').classList.contains('hidden')) recCat.value = trimmed;
+            const budgetCat = document.getElementById('budgetCategory');
+            if(budgetCat && !budgetCat.closest('#budgetModal').classList.contains('hidden')) budgetCat.value = trimmed;
         }
 
         function promptAddAssetCategoryInModal() {
@@ -1296,7 +1342,6 @@
             document.getElementById('assetCategory').value = trimmed;
         }
 
-        // FITUR 1: RECURRING TRANSACTIONS (Rutin Bulanan)
         function renderRecurring() {
             let html = '';
             if(!db.recurring) db.recurring = [];
@@ -1388,7 +1433,6 @@
             saveData(`${count} tagihan rutin berhasil dipotong dari saldo aset!`);
         }
 
-        // FITUR 2: SMART BUDGET ALERTS (Peringatan Pintar)
         function renderBudgets() {
             let html = '';
             const now = new Date();
@@ -2587,7 +2631,6 @@
             showToast("Data backup JSON berhasil diunduh!");
         }
 
-        // FITUR 4: EKSPOR LAPORAN KE CSV / EXCEL
         function exportCSV() {
             if(!db.transactions || db.transactions.length === 0) {
                 showToast("Belum ada transaksi untuk diekspor ke CSV.", "error");
