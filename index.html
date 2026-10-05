@@ -589,7 +589,7 @@
                         <input type="number" id="rYears" value="20" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     </div>
                 </div>
-                <button onclick="calculateRetirement()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm transition">Hitung Kebutuhan</button>
+                <button onclick="calculateRetirement()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition">Hitung Kebutuhan</button>
                 <div id="rResult" class="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 rounded-xl text-sm hidden"></div>
             </div>
         </section>
@@ -1350,6 +1350,22 @@
         // ADVANCED FILTER LOGIC (TRANSACTION TAB)
         // ==========================================
         function openAdvancedFilterModal() {
+            filterState.activeTab = 'income'; // Default tab Pendapatan
+            filterState.selectedCategories = [];
+            filterState.selectAll = false;
+            document.getElementById('filterSelectAll').checked = false;
+            
+            ['income', 'expense', 'asset'].forEach(t => {
+                const btn = document.getElementById(`btnFilterTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if(btn) {
+                    if(t === 'income') {
+                        btn.className = "flex-1 pb-3 text-xs font-bold text-primary-500 border-b-2 border-primary-500 transition";
+                    } else {
+                        btn.className = "flex-1 pb-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
+                    }
+                }
+            });
+
             renderAdvancedFilterModalContent();
             document.getElementById('advancedFilterModal').classList.remove('hidden');
         }
@@ -1358,14 +1374,17 @@
             filterState.activeTab = tab;
             filterState.selectedCategories = [];
             filterState.selectAll = false;
-            document.getElementById('filterSelectAll').checked = false;
+            const selectAllCheckbox = document.getElementById('filterSelectAll');
+            if(selectAllCheckbox) selectAllCheckbox.checked = false;
 
             ['income', 'expense', 'asset'].forEach(t => {
                 const btn = document.getElementById(`btnFilterTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
-                if(t === tab) {
-                    btn.className = "flex-1 pb-3 text-xs font-bold text-primary-500 border-b-2 border-primary-500 transition";
-                } else {
-                    btn.className = "flex-1 pb-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
+                if(btn) {
+                    if(t === tab) {
+                        btn.className = "flex-1 pb-3 text-xs font-bold text-primary-500 border-b-2 border-primary-500 transition";
+                    } else {
+                        btn.className = "flex-1 pb-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
+                    }
                 }
             });
             renderAdvancedFilterModalContent();
@@ -1395,11 +1414,15 @@
                 if(d.getFullYear() === year && (d.getMonth() + 1) === month) {
                     if(t.type === 'income') {
                         totalInc += Number(t.amount);
-                        const c = t.category || 'Lainnya';
-                        catTotals[c] = (catTotals[c] || 0) + Number(t.amount);
                     } else if(t.type === 'expense') {
                         totalExp += Number(t.amount);
-                        const c = t.category || 'Lainnya';
+                    }
+                    
+                    // Kumpulkan nominal per kategori sesuai tab aktif
+                    const c = t.category || 'Lainnya';
+                    if(filterState.activeTab === 'income' && t.type === 'income') {
+                        catTotals[c] = (catTotals[c] || 0) + Number(t.amount);
+                    } else if(filterState.activeTab === 'expense' && t.type === 'expense') {
                         catTotals[c] = (catTotals[c] || 0) + Number(t.amount);
                     }
                 }
@@ -1508,7 +1531,8 @@
         function resetAdvancedFilter() {
             filterState.selectedCategories = [];
             filterState.selectAll = false;
-            document.getElementById('filterSelectAll').checked = false;
+            const selectAllCheckbox = document.getElementById('filterSelectAll');
+            if(selectAllCheckbox) selectAllCheckbox.checked = false;
             renderAdvancedFilterModalContent();
         }
 
