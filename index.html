@@ -455,10 +455,7 @@
                             <canvas id="expenseChart"></canvas>
                         </div>
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-400 mb-2 italic">* Klik salah satu kategori di bawah untuk melihat detail transaksi.</p>
-                        <div id="statCategoryList" class="space-y-3"></div>
-                    </div>
+                    <div id="statCategoryList" class="space-y-3"></div>
                 </div>
 
                 <!-- 2. SUB TAB: ANGGARAN -->
@@ -663,17 +660,6 @@
                     <button type="submit" class="px-5 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition shadow-lg">Simpan</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Category Detail Transactions Modal -->
-    <div id="categoryTxModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-lg p-6 rounded-3xl shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="categoryTxModalTitle" class="text-base font-bold">Detail Transaksi Kategori</h3>
-                <button onclick="closeModal('categoryTxModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="categoryTxListContent" class="space-y-3"></div>
         </div>
     </div>
 
@@ -1755,7 +1741,7 @@
                                 <span class="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-2 py-0.5 rounded font-medium">${a.category}</span>
                                 <div class="space-x-1">
                                     <button onclick="editAsset('${a.id}')" class="text-gray-400 hover:text-primary-600 p-1" title="Edit Saldo"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="deleteAsset('${a.id}')" class="text-rose-400 hover:text-rose-600 p-1" title="Hapus Aset"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    <button onclick="deleteAsset('${a.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
                                 </div>
                             </div>
                             <h4 class="font-bold text-base mb-1">${a.name}</h4>
@@ -1952,4 +1938,347 @@
                             align: 'end',
                             clamp: false,
                             display: function(ctx) {
-                                return !(ctx.chart.data.labels.length === 1 &&
+                                return !(ctx.chart.data.labels.length === 1 && ctx.chart.data.labels[0] === 'Tidak Ada Data');
+                            }
+                        }
+                    },
+                    elements: {
+                        arc: {
+                            borderWidth: 2
+                        }
+                    }
+                },
+                plugins: [
+                    ChartDataLabels,
+                    {
+                        id: 'pieConnectorLines',
+                        afterDraw(chart) {
+                            if (chart.data.labels.length === 1 && chart.data.labels[0] === 'Tidak Ada Data') return;
+                            const { ctx, chartArea } = chart;
+                            const meta = chart.getDatasetMeta(0);
+                            
+                            ctx.save();
+                            ctx.strokeStyle = isDark ? '#4b5563' : '#9ca3af';
+                            ctx.lineWidth = 1;
+
+                            meta.data.forEach((arc) => {
+                                const { x, y, startAngle, endAngle, outerRadius } = arc;
+                                const angle = startAngle + (endAngle - startAngle) / 2;
+                                
+                                const cos = Math.cos(angle);
+                                const sin = Math.sin(angle);
+
+                                const startX = x + outerRadius * cos;
+                                const startY = y + outerRadius * sin;
+                                const midX = x + (outerRadius + 15) * cos;
+                                const midY = y + (outerRadius + 15) * sin;
+                                const endX = midX + (cos > 0 ? 15 : -15);
+                                const endY = midY;
+
+                                ctx.beginPath();
+                                ctx.moveTo(startX, startY);
+                                ctx.lineTo(midX, midY);
+                                ctx.lineTo(endX, endY);
+                                ctx.stroke();
+                            });
+                            ctx.restore();
+                        }
+                    }
+                ]
+            });
+        }
+
+        function renderStatCategoryList(catMap, totalAmount) {
+            const sorted = Object.entries(catMap).sort((a,b) => b[1] - a[1]);
+            let html = '';
+            sorted.forEach(([cat, amt]) => {
+                const pct = totalAmount > 0 ? Math.round((amt / totalAmount) * 100) : 0;
+                html += `
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-600">${pct}%</span>
+                            <span class="font-bold text-sm">${cat}</span>
+                        </div>
+                        <span class="font-bold text-sm">${formatRupiah(amt)}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('statCategoryList').innerHTML = html || '<p class="text-center text-xs text-gray-400 py-6">Belum ada data untuk periode ini.</p>';
+        }
+
+        function renderStatBudgetView(startDate, endDate) {
+            let budgetSummaryHtml = '';
+            if(!db.budgets) db.budgets = [];
+
+            db.budgets.forEach(b => {
+                let spent = 0;
+                db.transactions.forEach(t => {
+                    if(t.type !== 'expense') return;
+                    if(b.category !== 'ALL' && t.category !== b.category) return;
+                    if(startDate && t.date < startDate) return;
+                    if(endDate && t.date > endDate) return;
+                    spent += Number(t.amount);
+                });
+
+                const rem = Math.max(0, b.limit - spent);
+                const pct = b.limit > 0 ? Math.max(0, Math.min(100, Math.round((rem / b.limit) * 100))) : 0;
+                const isOver = spent > b.limit;
+
+                budgetSummaryHtml += `
+                    <div class="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded">${b.category}</span>
+                                <h4 class="font-bold text-base mt-1">${b.name}</h4>
+                            </div>
+                            <div class="space-x-1">
+                                <button onclick="editBudget('${b.id}')" class="text-gray-400 hover:text-primary-600 p-1" title="Edit Budget"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="deleteBudget('${b.id}')" class="text-rose-400 hover:text-rose-600 p-1" title="Hapus Budget"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-gray-400">Sisa Anggaran:</span>
+                            <span class="text-sm font-bold ${isOver ? 'text-rose-600' : 'text-emerald-600'}">${formatRupiah(rem)}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden my-2">
+                            <div class="${isOver ? 'bg-rose-600' : 'bg-primary-600'} h-2 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-gray-400">
+                            <span>Terpakai: ${formatRupiah(spent)}</span>
+                            <span>Limit: ${formatRupiah(b.limit)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('statBudgetSummary').innerHTML = budgetSummaryHtml || '<p class="text-xs text-gray-400 text-center py-4">Belum ada anggaran.</p>';
+
+            // Render hanya kategori yang ada transaksi (tidak nol)
+            let catListHtml = '';
+            db.categories.forEach(c => {
+                let catSpent = 0;
+                db.transactions.forEach(t => {
+                    if(t.type === 'expense' && t.category === c) {
+                        if(startDate && t.date < startDate) return;
+                        if(endDate && t.date > endDate) return;
+                        catSpent += Number(t.amount);
+                    }
+                });
+
+                if(catSpent > 0) {
+                    catListHtml += `
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 text-sm">
+                            <span class="font-medium">${c}</span>
+                            <span class="font-bold text-rose-600">${formatRupiah(catSpent)}</span>
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById('statBudgetCategoryList').innerHTML = catListHtml || '<p class="text-xs text-gray-400 text-center py-4">Tidak ada aktivitas pengeluaran pada periode ini.</p>';
+        }
+
+        function renderStatNotesList(notesMap) {
+            const sorted = Object.entries(notesMap).sort((a,b) => b[1].total - a[1].total);
+            let html = '';
+            sorted.forEach(([note, info]) => {
+                html += `
+                    <div class="flex justify-between items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 text-sm">
+                        <div>
+                            <span class="font-semibold block">${note}</span>
+                            <span class="text-[10px] text-gray-400">${info.count} transaksi</span>
+                        </div>
+                        <span class="font-bold text-rose-600">${formatRupiah(info.total)}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('statNotesList').innerHTML = html || '<p class="text-center text-xs text-gray-400 py-6">Belum ada catatan transaksi.</p>';
+        }
+
+        function openTransactionModal(type) {
+            document.getElementById('txId').value = '';
+            document.getElementById('txType').value = type;
+            document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('txNote').value = '';
+            document.getElementById('txDescription').value = '';
+            document.getElementById('txAmount').value = '';
+            
+            populateAssetSelects();
+            populateCategorySelects();
+            
+            const titleMap = { income: 'Tambah Pemasukan', expense: 'Tambah Pengeluaran', transfer: 'Transfer Saldo' };
+            document.getElementById('txModalTitle').innerText = titleMap[type];
+
+            document.getElementById('txCategoryContainer').classList.toggle('hidden', type === 'transfer');
+            document.getElementById('txDestAssetContainer').classList.toggle('hidden', type !== 'transfer');
+            document.getElementById('txSourceTypeContainer').classList.toggle('hidden', type !== 'expense');
+            document.getElementById('txModal').classList.remove('hidden');
+        }
+
+        function editTransaction(id) {
+            const tx = db.transactions.find(t => t.id === id);
+            if(!tx) return;
+            document.getElementById('txId').value = tx.id;
+            document.getElementById('txType').value = tx.type;
+            document.getElementById('txDate').value = tx.date;
+            document.getElementById('txNote').value = tx.note || '';
+            document.getElementById('txDescription').value = tx.description || '';
+            document.getElementById('txAmount').value = tx.amount;
+            
+            populateAssetSelects();
+            populateCategorySelects();
+            if(tx.assetId) document.getElementById('txAssetId').value = tx.assetId;
+
+            document.getElementById('txModalTitle').innerText = 'Edit Transaksi';
+            document.getElementById('txModal').classList.remove('hidden');
+        }
+
+        function saveTransaction(e) {
+            e.preventDefault();
+            const id = document.getElementById('txId').value;
+            const type = document.getElementById('txType').value;
+            const date = document.getElementById('txDate').value;
+            const note = document.getElementById('txNote').value.trim();
+            const description = document.getElementById('txDescription').value.trim();
+            const amount = Number(document.getElementById('txAmount').value);
+            const category = document.getElementById('txCategory').value;
+            const sourceType = document.getElementById('txSourceType').value;
+            const assetId = document.getElementById('txAssetId').value;
+            const destAssetId = document.getElementById('txDestAssetId').value;
+
+            if (type === 'income') {
+                const assetObj = db.assets.find(a => a.id === assetId);
+                if(assetObj) assetObj.balance += amount;
+            } else if (type === 'expense') {
+                const assetObj = db.assets.find(a => a.id === assetId);
+                if(assetObj) assetObj.balance -= amount;
+            } else if (type === 'transfer') {
+                const aObj = db.assets.find(a => a.id === assetId);
+                const dObj = db.assets.find(a => a.id === destAssetId);
+                if(aObj && dObj) { aObj.balance -= amount; dObj.balance += amount; }
+            }
+
+            const newTx = {
+                id: id || Date.now().toString(),
+                type, date, note: note || (category ? category : 'Transaksi'), description, amount,
+                sourceType, assetId, destAssetId, category: type === 'transfer' ? 'Transfer' : category
+            };
+
+            if(id) {
+                const idx = db.transactions.findIndex(t => t.id === id);
+                if(idx > -1) db.transactions[idx] = newTx;
+            } else {
+                db.transactions.unshift(newTx);
+            }
+
+            saveData("Transaksi berhasil disimpan!");
+            closeModal('txModal');
+        }
+
+        function deleteTransaction(id) {
+            showConfirm('Hapus Transaksi', 'Hapus transaksi ini?', () => {
+                db.transactions = db.transactions.filter(t => t.id !== id);
+                saveData("Transaksi dihapus.");
+            });
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function openCategoryManagerModal() {
+            let html = '';
+            db.categories.forEach(c => {
+                html += `<div class="flex justify-between items-center p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-sm"><span>${c}</span></div>`;
+            });
+            document.getElementById('categoryListContainer').innerHTML = html;
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function addCustomCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('newCatName').value.trim();
+            if(!name || db.categories.includes(name)) return;
+            db.categories.push(name);
+            document.getElementById('newCatName').value = '';
+            saveData("Kategori ditambahkan!");
+            closeModal('categoryModal');
+        }
+
+        function openAssetCategoryManagerModal() {
+            let html = '';
+            db.assetCategories.forEach(c => {
+                html += `<div class="flex justify-between items-center p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-sm"><span>${c}</span></div>`;
+            });
+            document.getElementById('assetCategoryListContainer').innerHTML = html;
+            document.getElementById('assetCategoryModal').classList.remove('hidden');
+        }
+
+        function addCustomAssetCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('newAssetCatName').value.trim();
+            if(!name || db.assetCategories.includes(name)) return;
+            db.assetCategories.push(name);
+            document.getElementById('newAssetCatName').value = '';
+            saveData("Kategori aset ditambahkan!");
+            closeModal('assetCategoryModal');
+        }
+
+        function switchCalc(type) {
+            ['compound', 'living', 'loan', 'retirement'].forEach(t => {
+                document.getElementById(`calc${t.charAt(0).toUpperCase() + t.slice(1)}Box`).classList.add('hidden');
+                document.getElementById(`btnCalc${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition";
+            });
+            document.getElementById(`calc${type.charAt(0).toUpperCase() + type.slice(1)}Box`).classList.remove('hidden');
+            document.getElementById(`btnCalc${type.charAt(0).toUpperCase() + type.slice(1)}`).className = "calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-primary-500 shadow-sm transition";
+        }
+
+        function calculateCompound() {
+            const p = Number(document.getElementById('cInitial').value);
+            const pmt = Number(document.getElementById('cMonthly').value);
+            const r = Number(document.getElementById('cRate').value) / 100 / 12;
+            const n = Number(document.getElementById('cYears').value) * 12;
+            let total = p;
+            for(let i=0; i<n; i++) total = (total + pmt) * (1 + r);
+            document.getElementById('cResult').classList.remove('hidden');
+            document.getElementById('cResult').innerHTML = `Total Akhir: <strong>${formatRupiah(total)}</strong>`;
+        }
+
+        function calculateLoan() {
+            const pv = Number(document.getElementById('lAmount').value);
+            const r = Number(document.getElementById('lRate').value) / 100 / 12;
+            const n = Number(document.getElementById('lMonths').value);
+            const pmt = (pv * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            document.getElementById('lResult').classList.remove('hidden');
+            document.getElementById('lResult').innerHTML = `Cicilan per Bulan: <strong class="text-rose-600">${formatRupiah(pmt)}</strong>`;
+        }
+
+        function calculateRetirement() {
+            const monthlyExp = Number(document.getElementById('rExpense').value);
+            const years = Number(document.getElementById('rYears').value);
+            const totalNeeded = monthlyExp * 12 * years;
+            document.getElementById('rResult').classList.remove('hidden');
+            document.getElementById('rResult').innerHTML = `Target Dana Pensiun: <strong>${formatRupiah(totalNeeded)}</strong>`;
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `dompetku_backup.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        function exportCSV() {
+            let csv = "ID,Tanggal,Tipe,Keterangan,Kategori,Jumlah\r\n";
+            db.transactions.forEach(t => {
+                csv += [t.id, t.date, t.type, `"${t.note}"`, `"${t.category}"`, t.amount].join(",") + "\r\n";
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + csv));
+            link.setAttribute("download", `laporan_transaksi.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+    </script>
+</body>
+</html>
