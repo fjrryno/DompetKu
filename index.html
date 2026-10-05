@@ -902,7 +902,6 @@
         let expenseChartInstance = null;
         let unsubscribeFirestore = null;
 
-        // State khusus Statistik Upgraded
         let statSubTabState = 'stat'; // 'stat' | 'budget' | 'notes'
         let statTypeFilterState = 'expense'; // 'income' | 'expense'
 
@@ -1125,7 +1124,7 @@
             const selectTx = document.getElementById('txAssetId');
             const selectDest = document.getElementById('txDestAssetId');
             const filterAsset = document.getElementById('filterAsset');
-            let options = '<option value="">Pilih Aset...</option>';
+            let options = '';
             let filterOptions = '<option value="">Semua Aset / Rekening</option>';
             db.assets.forEach(a => {
                 options += `<option value="${a.id}">${a.name} (${formatRupiah(a.balance)})</option>`;
@@ -1136,7 +1135,7 @@
             if(filterAsset) filterAsset.innerHTML = filterOptions;
 
             const selectSavingsTx = document.getElementById('txSavingsId');
-            let savingsOptions = '<option value="">Pilih Target Tabungan...</option>';
+            let savingsOptions = '';
             db.savings.forEach(g => {
                 savingsOptions += `<option value="${g.id}">${g.name} (${formatRupiah(g.current)})</option>`;
             });
@@ -1157,7 +1156,7 @@
 
         function populateGoalSourceSelects() {
             const selectGoalSource = document.getElementById('goalSourceAssetId');
-            let options = '<option value="">Pilih Aset Sumber...</option>';
+            let options = '';
             db.assets.forEach(a => { options += `<option value="${a.id}">${a.name} (${formatRupiah(a.balance)})</option>`; });
             if(selectGoalSource) selectGoalSource.innerHTML = options;
         }
@@ -1310,7 +1309,6 @@
                 });
                 const remaining = Math.max(0, b.limit - spent);
                 const remainingPct = b.limit > 0 ? Math.max(0, Math.min(100, Math.round((remaining / b.limit) * 100))) : 0;
-                const usedPct = 100 - remainingPct;
                 const isOver = spent > b.limit;
 
                 html += `
@@ -1466,9 +1464,6 @@
             document.getElementById('fullTxTableBody').innerHTML = html || '<tr><td colspan="5" class="py-6 text-center text-gray-400 text-sm">Tidak ada transaksi ditemukan.</td></tr>';
         }
 
-        // ==========================================
-        // FITUR UTAMA: AUTO-SELISIH SALDO ASET
-        // ==========================================
         function renderAssets() {
             let html = '';
             db.assets.forEach(a => {
@@ -1530,7 +1525,6 @@
                     const diff = newBalance - oldBalance;
 
                     if(diff !== 0) {
-                        // OTOMATIS CATAT SELISIH SEBAGAI TRANSAKSI KOREKSI
                         const txType = diff > 0 ? 'income' : 'expense';
                         const absDiff = Math.abs(diff);
                         db.transactions.unshift({
@@ -1565,9 +1559,6 @@
             });
         }
 
-        // ==========================================
-        // UPGRADED STATISTICS & TRENDS (Sesuai Referensi)
-        // ==========================================
         function switchStatSubTab(sub) {
             statSubTabState = sub;
             ['Stat', 'Budget', 'Notes'].forEach(s => {
@@ -1600,7 +1591,7 @@
             let totalInc = 0;
             let totalExp = 0;
             let catMap = {};
-            let notesMap = {}; // Untuk tab catatan
+            let notesMap = {};
 
             db.transactions.forEach(t => {
                 if(startDate && t.date < startDate) return;
@@ -1614,7 +1605,6 @@
                     catMap[cat] = (catMap[cat] || 0) + Number(t.amount);
                 }
 
-                // Rekap catatan / keterangan untuk tab Notes
                 if(t.type === statTypeFilterState) {
                     const keyNote = t.note ? t.note.trim() : (t.description ? t.description.trim() : 'Tanpa Keterangan');
                     if(keyNote) {
@@ -1630,14 +1620,9 @@
 
             const activeTotal = statTypeFilterState === 'income' ? totalInc : totalExp;
 
-            // Render Chart & List Persentase Kategori
             renderPieChart(catMap);
             renderStatCategoryList(catMap, activeTotal);
-
-            // Render Budget di Statistik Tab
             renderStatBudgetView(totalExp);
-
-            // Render Notes Tab
             renderStatNotesList(notesMap);
         }
 
@@ -1711,7 +1696,6 @@
             });
             document.getElementById('statBudgetSummary').innerHTML = budgetHtml || '<p class="text-xs text-gray-400">Belum ada anggaran.</p>';
 
-            // List kategori untuk anggaran
             db.categories.forEach(c => {
                 let catSpent = 0;
                 db.transactions.forEach(t => {
@@ -1744,9 +1728,6 @@
             document.getElementById('statNotesList').innerHTML = html || '<p class="text-center text-xs text-gray-400 py-6">Belum ada catatan transaksi.</p>';
         }
 
-        // ==========================================
-        // OTHER HELPERS & MODALS
-        // ==========================================
         function openTransactionModal(type) {
             document.getElementById('txId').value = '';
             document.getElementById('txType').value = type;
@@ -1754,6 +1735,9 @@
             document.getElementById('txNote').value = '';
             document.getElementById('txDescription').value = '';
             document.getElementById('txAmount').value = '';
+            
+            // PASTIKAN LIST ASET SELALU TER-POPULATE SAAT MODAL DIBUKA
+            populateAssetSelects();
             populateCategorySelects();
             
             const titleMap = { income: 'Tambah Pemasukan', expense: 'Tambah Pengeluaran', transfer: 'Transfer Saldo' };
@@ -1774,7 +1758,10 @@
             document.getElementById('txNote').value = tx.note || '';
             document.getElementById('txDescription').value = tx.description || '';
             document.getElementById('txAmount').value = tx.amount;
+            
+            populateAssetSelects();
             populateCategorySelects();
+            if(tx.assetId) document.getElementById('txAssetId').value = tx.assetId;
 
             document.getElementById('txModalTitle').innerText = 'Edit Transaksi';
             document.getElementById('txModal').classList.remove('hidden');
