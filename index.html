@@ -20,6 +20,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -329,8 +331,26 @@
             </div>
         </section>
 
-        <!-- 3. BUDGETING TAB -->
+        <!-- 3. BUDGETING TAB (Dengan Kartu Estimasi Total & Tambah Kategori) -->
         <section id="budgeting" class="tab-content hidden space-y-6">
+            <!-- Kartu Total Estimasi Keseluruhan Budgeting -->
+            <div class="bg-gradient-to-br from-primary-600 to-indigo-700 text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="text-xs uppercase tracking-wider opacity-80 font-semibold block">Total Anggaran (Budget) Keseluruhan</span>
+                    <h2 id="budgetTotalLimitDisplay" class="text-3xl font-bold mt-1">Rp 0</h2>
+                </div>
+                <div class="flex items-center space-x-6 border-t md:border-t-0 md:border-l border-white/20 pt-3 md:pt-0 md:pl-6">
+                    <div>
+                        <span class="text-xs opacity-80 block">Total Terpakai</span>
+                        <strong id="budgetTotalSpentDisplay" class="text-lg">Rp 0</strong>
+                    </div>
+                    <div>
+                        <span class="text-xs opacity-80 block">Total Sisa</span>
+                        <strong id="budgetTotalRemainingDisplay" class="text-lg">Rp 0</strong>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
@@ -338,6 +358,7 @@
                         <p class="text-xs text-gray-500">Budget dimulai dari 100% dan berkurang otomatis.</p>
                     </div>
                     <div class="flex gap-2">
+                        <button onclick="openCategoryManagerModal()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-xs font-semibold flex items-center transition"><i class="fa-solid fa-tags mr-1.5"></i>Tambah Kategori</button>
                         <button onclick="openBudgetModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Buat Budget Baru</button>
                     </div>
                 </div>
@@ -390,7 +411,7 @@
             </div>
         </section>
 
-        <!-- 6. STATISTICS TAB (UPGRADED ALA REFERENSI GAMBAR) -->
+        <!-- 6. STATISTICS TAB -->
         <section id="statistics" class="tab-content hidden space-y-6">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-6">
                 
@@ -426,14 +447,13 @@
                     </div>
                 </div>
 
-                <!-- 1. SUB TAB: STATISTIK (Pie Chart & Category Breakdown) -->
+                <!-- 1. SUB TAB: STATISTIK -->
                 <div id="statSubContentStat" class="space-y-6">
                     <div class="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
-                        <div class="w-full max-w-xs h-64 relative flex items-center justify-center">
+                        <div class="w-full max-w-sm h-72 relative flex items-center justify-center">
                             <canvas id="expenseChart"></canvas>
                         </div>
                     </div>
-                    <!-- List Kategori Persentase -->
                     <div id="statCategoryList" class="space-y-3"></div>
                 </div>
 
@@ -443,7 +463,7 @@
                     <div id="statBudgetCategoryList" class="space-y-3"></div>
                 </div>
 
-                <!-- 3. SUB TAB: CATATAN (Rekonsiliasi Catatan & Keterangan Transaksi) -->
+                <!-- 3. SUB TAB: CATATAN -->
                 <div id="statSubContentNotes" class="space-y-3">
                     <div class="flex justify-between items-center text-xs text-gray-400 uppercase font-bold px-2">
                         <span>Catatan / Keterangan</span>
@@ -455,7 +475,7 @@
             </div>
         </section>
 
-        <!-- 7. CALCULATORS TAB -->
+        <!-- 7. CALCULATORS TAB (Dilengkapi Tombol Jadikan Budget & Total Otomatis) -->
         <section id="calculators" class="tab-content hidden space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button onclick="switchCalc('compound')" id="btnCalcCompound" class="calc-tab-btn p-4 rounded-2xl border text-left bg-white dark:bg-gray-800 border-primary-500 shadow-sm transition">
@@ -505,11 +525,12 @@
                 <div id="cResult" class="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 rounded-xl text-sm hidden"></div>
             </div>
 
-            <!-- Living Cost Calc -->
+            <!-- Living Cost Calc (Total & Tombol Jadikan Budget) -->
             <div id="calcLivingBox" class="calc-box bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hidden">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                     <div>
                         <h3 class="font-bold text-base">Kalkulator Estimasi Biaya Hidup 1 Bulan</h3>
+                        <p class="text-xs text-gray-500">Hitung total biaya hidup dan jadikan target anggaran (budgeting).</p>
                     </div>
                     <button onclick="openLivingItemModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-3.5 py-2 rounded-xl text-xs font-medium shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i>Tambah Item</button>
                 </div>
@@ -519,6 +540,7 @@
                             <tr class="border-b border-gray-100 dark:border-gray-700 text-gray-400 text-xs uppercase">
                                 <th class="py-2.5 px-3">Kategori / Item Biaya</th>
                                 <th class="py-2.5 px-3 text-right">Nominal per Bulan (Rp)</th>
+                                <th class="py-2.5 px-3 text-right">Persentase</th>
                                 <th class="py-2.5 px-3 text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -690,7 +712,10 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Kategori Transaksi</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-medium text-gray-500">Kategori Transaksi</label>
+                        <button type="button" onclick="promptAddCategoryInModal()" class="text-xs text-primary-600 dark:text-primary-400 font-semibold hover:underline">+ Tambah Kategori Baru</button>
+                    </div>
                     <select id="budgetCategory" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                         <option value="ALL">Semua Kategori Pengeluaran</option>
                     </select>
@@ -853,8 +878,8 @@
             <form onsubmit="saveLivingItem(event)" class="space-y-4">
                 <input type="hidden" id="livingItemId">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Nama Item / Kategori Biaya</label>
-                    <input type="text" id="livingItemName" placeholder="Contoh: Makan" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Kategori / Nama Item</label>
+                    <select id="livingItemCategorySelect" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 mb-2"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Estimasi Nominal per Bulan (Rp)</label>
@@ -1058,6 +1083,7 @@
             populateGoalSourceSelects();
             populateBudgetCategorySelects();
             populateRecurringSelects();
+            populateLivingCategorySelects();
         }
 
         function setDefaultDate() {
@@ -1187,6 +1213,14 @@
             assetCatSelect.innerHTML = html;
         }
 
+        function populateLivingCategorySelects() {
+            const sel = document.getElementById('livingItemCategorySelect');
+            if(!sel) return;
+            let html = '';
+            db.categories.forEach(c => { html += `<option value="${c}">${c}</option>`; });
+            sel.innerHTML = html;
+        }
+
         function toggleTxSourceType() {
             const type = document.getElementById('txSourceType').value;
             document.getElementById('txAssetContainer').classList.toggle('hidden', type !== 'asset');
@@ -1200,9 +1234,7 @@
             if(db.categories.includes(trimmed)) { showToast('Kategori sudah ada!', 'error'); return; }
             db.categories.push(trimmed);
             saveData("Kategori ditambahkan!");
-            populateCategorySelects();
-            populateBudgetCategorySelects();
-            document.getElementById('txCategory').value = trimmed;
+            updateAll();
         }
 
         function promptAddAssetCategoryInModal() {
@@ -1217,8 +1249,79 @@
         }
 
         // ==========================================
-        // SAVINGS & DEBTS RENDER FUNCTIONS
+        // LIVING COST CALCULATOR & BUDGET SYNC
         // ==========================================
+        function renderLivingCosts() {
+            let totalLiving = 0;
+            if(!db.livingCosts) db.livingCosts = [];
+            db.livingCosts.forEach(item => { totalLiving += Number(item.amount); });
+
+            let html = '';
+            db.livingCosts.forEach(item => {
+                const pct = totalLiving > 0 ? ((Number(item.amount) / totalLiving) * 100).toFixed(1) + '%' : '0%';
+                html += `
+                    <tr class="border-b border-gray-100 dark:border-gray-800">
+                        <td class="py-3 px-3 font-semibold">${item.name}</td>
+                        <td class="py-3 px-3 text-right font-bold text-emerald-600">${formatRupiah(item.amount)}</td>
+                        <td class="py-3 px-3 text-right font-semibold text-primary-600">${pct}</td>
+                        <td class="py-3 px-3 text-center space-x-1">
+                            <button onclick="addLivingCostToBudget('${item.name}', ${item.amount})" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-primary-100 transition" title="Jadikan Budget"><i class="fa-solid fa-plus mr-1"></i>Jadikan Budget</button>
+                            <button onclick="deleteLivingItem('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('livingItemsTableBody').innerHTML = html || '<tr><td colspan="4" class="py-4 text-center text-xs text-gray-400">Belum ada item biaya hidup.</td></tr>';
+            document.getElementById('livingTotalAmount').innerText = formatRupiah(totalLiving);
+        }
+
+        function openLivingItemModal() {
+            document.getElementById('livingItemId').value = '';
+            document.getElementById('livingItemAmount').value = '';
+            populateLivingCategorySelects();
+            document.getElementById('livingItemModal').classList.remove('hidden');
+        }
+
+        function saveLivingItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('livingItemCategorySelect').value;
+            const amount = Number(document.getElementById('livingItemAmount').value);
+            if(!db.livingCosts) db.livingCosts = [];
+            db.livingCosts.push({ id: Date.now().toString(), name, amount });
+            saveData("Item biaya hidup disimpan!");
+            closeModal('livingItemModal');
+            renderLivingCosts();
+        }
+
+        function deleteLivingItem(id) {
+            showConfirm('Hapus Item', 'Hapus item biaya hidup ini?', () => {
+                db.livingCosts = db.livingCosts.filter(i => i.id !== id);
+                saveData("Item dihapus.");
+                renderLivingCosts();
+            });
+        }
+
+        function addLivingCostToBudget(categoryName, amount) {
+            let totalLiving = 0;
+            db.livingCosts.forEach(i => totalLiving += Number(i.amount));
+            const pct = totalLiving > 0 ? ((amount / totalLiving) * 100).toFixed(1) : 0;
+
+            const existing = db.budgets.find(b => b.category === categoryName);
+            if(existing) {
+                existing.limit = amount;
+            } else {
+                db.budgets.push({
+                    id: Date.now().toString(),
+                    name: categoryName,
+                    limit: amount,
+                    period: 'monthly',
+                    category: categoryName
+                });
+            }
+            saveData(`Budget "${categoryName}" (${pct}% dari total biaya hidup) berhasil dibuat!`);
+            switchTab('budgeting');
+        }
+
         function renderSavings() {
             let html = '';
             if(!db.savings) db.savings = [];
@@ -1328,8 +1431,6 @@
             });
         }
 
-        function renderLivingCosts() {}
-
         function renderRecurring() {
             let html = '';
             if(!db.recurring) db.recurring = [];
@@ -1414,6 +1515,9 @@
         function renderBudgets() {
             let html = '';
             const now = new Date();
+            let totalLimitAll = 0;
+            let totalSpentAll = 0;
+
             db.budgets.forEach(b => {
                 let spent = 0;
                 db.transactions.forEach(t => {
@@ -1423,6 +1527,10 @@
                     let matchesPeriod = tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
                     if(matchesPeriod) spent += Number(t.amount);
                 });
+
+                totalLimitAll += Number(b.limit);
+                totalSpentAll += spent;
+
                 const remaining = Math.max(0, b.limit - spent);
                 const remainingPct = b.limit > 0 ? Math.max(0, Math.min(100, Math.round((remaining / b.limit) * 100))) : 0;
                 const isOver = spent > b.limit;
@@ -1431,7 +1539,7 @@
                     <div class="bg-gray-50 dark:bg-gray-950/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <span class="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-2 py-0.5 rounded font-medium">Bulanan</span>
+                                <span class="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-2 py-0.5 rounded font-medium">${b.category}</span>
                                 <button onclick="deleteBudget('${b.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
                             </div>
                             <h4 class="font-bold text-base mb-1">${b.name}</h4>
@@ -1453,12 +1561,17 @@
                 `;
             });
             document.getElementById('budgetGrid').innerHTML = html || '<p class="text-gray-400 text-sm col-span-full text-center py-6">Belum ada anggaran.</p>';
+
+            document.getElementById('budgetTotalLimitDisplay').innerText = formatRupiah(totalLimitAll);
+            document.getElementById('budgetTotalSpentDisplay').innerText = formatRupiah(totalSpentAll);
+            document.getElementById('budgetTotalRemainingDisplay').innerText = formatRupiah(Math.max(0, totalLimitAll - totalSpentAll));
         }
 
         function openBudgetModal() {
             document.getElementById('budgetId').value = '';
             document.getElementById('budgetName').value = '';
             document.getElementById('budgetLimit').value = '';
+            populateBudgetCategorySelects();
             document.getElementById('budgetModal').classList.remove('hidden');
         }
 
@@ -1763,8 +1876,26 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#ffffff',
+                            font: { weight: 'bold', size: 11 },
+                            formatter: (value, ctx) => {
+                                if (value === 1 && ctx.chart.data.labels.length === 1 && ctx.chart.data.labels[0] === 'Tidak Ada Data') return '';
+                                const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
+                                let shortNominal = value >= 1000000 ? (value/1000000).toFixed(1) + 'jt' : (value >= 1000 ? (value/1000).toFixed(0) + 'rb' : value);
+                                return `${shortNominal}\n(${percentage})`;
+                            },
+                            textAlign: 'center',
+                            anchor: 'end',
+                            align: 'start',
+                            offset: 4
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
             });
         }
 
