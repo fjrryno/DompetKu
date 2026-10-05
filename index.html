@@ -286,9 +286,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     <input type="text" id="filterSearch" placeholder="Cari keterangan / catatan..." oninput="renderTransactions()" class="p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-primary-500">
-                    <div id="activeFilterBadgeContainer" class="flex items-center text-xs text-primary-600 font-medium px-2">
-                        <!-- Info status filter aktif -->
-                    </div>
+                    <div id="activeFilterBadgeContainer" class="flex items-center text-xs text-primary-600 font-medium px-2"></div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -328,7 +326,6 @@
 
         <!-- 3. BUDGETING TAB -->
         <section id="budgeting" class="tab-content hidden space-y-6">
-            <!-- Kartu Total Estimasi Keseluruhan Budgeting -->
             <div class="bg-gradient-to-br from-primary-600 to-indigo-700 text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <span class="text-xs uppercase tracking-wider opacity-80 font-semibold block">Total Anggaran (Budget) Keseluruhan</span>
@@ -445,11 +442,11 @@
                 <!-- 1. SUB TAB: STATISTIK -->
                 <div id="statSubContentStat" class="space-y-6">
                     <div class="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
-                        <!-- Kotak diperbesar agar label luar lingkaran tidak terpotong -->
                         <div class="w-full max-w-lg h-96 relative flex items-center justify-center">
                             <canvas id="expenseChart"></canvas>
                         </div>
                     </div>
+                    <p class="text-xs text-center text-gray-400 italic"><i class="fa-solid fa-circle-info mr-1"></i> Klik pada salah satu kategori di bawah untuk melihat rincian transaksinya.</p>
                     <div id="statCategoryList" class="space-y-3"></div>
                 </div>
 
@@ -601,6 +598,17 @@
 
     <!-- MODALS -->
 
+    <!-- Stat Category Detail Modal -->
+    <div id="statDetailModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+        <div class="bg-gray-900 text-gray-100 w-full max-w-lg p-6 rounded-3xl shadow-2xl my-8 border border-gray-800 space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 id="statDetailTitle" class="text-base font-bold text-primary-400">Rincian Kategori</h3>
+                <button onclick="closeModal('statDetailModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="statDetailContent" class="space-y-2.5 max-h-96 overflow-y-auto pr-1"></div>
+        </div>
+    </div>
+
     <!-- Advanced Filter Modal -->
     <div id="advancedFilterModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-gray-900 text-gray-100 w-full max-w-lg p-6 rounded-3xl shadow-2xl my-8 border border-gray-800 space-y-6">
@@ -636,9 +644,9 @@
 
             <!-- Sub Tab Filter: Pendapatan / Pengeluaran / Aset -->
             <div class="flex border-b border-gray-800">
-                <button onclick="switchFilterTab('income')" id="btnFilterTabInc" class="flex-1 pb-3 text-xs font-bold text-primary-500 border-b-2 border-primary-500 transition">Pendapatan</button>
-                <button onclick="switchFilterTab('expense')" id="btnFilterTabExp" class="flex-1 pb-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">Pengeluaran</button>
-                <button onclick="switchFilterTab('asset')" id="btnFilterTabAsset" class="flex-1 pb-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">Aset</button>
+                <button type="button" onclick="switchFilterTab('income')" id="btnFilterTabInc" class="flex-1 pb-3 text-xs font-bold text-primary-500 border-b-2 border-primary-500 transition">Pendapatan</button>
+                <button type="button" onclick="switchFilterTab('expense')" id="btnFilterTabExp" class="flex-1 pb-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">Pengeluaran</button>
+                <button type="button" onclick="switchFilterTab('asset')" id="btnFilterTabAsset" class="flex-1 pb-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">Aset</button>
             </div>
 
             <!-- Daftar Checkbox Filter -->
@@ -907,6 +915,13 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">Nama Kategori Baru</label>
                     <input type="text" id="newCatName" placeholder="Contoh: Jajan, Kuliah, Motor" required class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Tipe Kategori</label>
+                    <select id="newCatType" class="w-full p-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                        <option value="expense">Pengeluaran</option>
+                        <option value="income">Pendapatan</option>
+                    </select>
+                </div>
                 <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-xl text-sm font-medium transition">Tambah Kategori</button>
             </form>
             <hr class="border-gray-100 dark:border-gray-700 my-4">
@@ -969,7 +984,17 @@
             debts: [],
             recurring: [],
             categories: [
-                'Makan', 'Jajan', 'Kost', 'Kuliah', 'Motor', 'Hiburan', 'Arisan', 'Tagihan', 'Lainnya'
+                { name: 'Makan', type: 'expense' },
+                { name: 'Jajan', type: 'expense' },
+                { name: 'Kost', type: 'expense' },
+                { name: 'Kuliah', type: 'expense' },
+                { name: 'Motor', type: 'expense' },
+                { name: 'Hiburan', type: 'expense' },
+                { name: 'Arisan', type: 'expense' },
+                { name: 'Tagihan', type: 'expense' },
+                { name: 'Gaji', type: 'income' },
+                { name: 'Jualan', type: 'income' },
+                { name: 'Lainnya', type: 'expense' }
             ],
             assetCategories: [
                 'Kas / Bank', 'Investasi', 'Properti', 'Kendaraan', 'Utang / Liabilitas'
@@ -996,7 +1021,7 @@
         let filterState = {
             yearMonth: '2026-10', // Default Okt 2026
             activeTab: 'income', // income, expense, asset
-            selectedCategories: [], // array of selected category names or asset IDs
+            selectedCategories: [], 
             selectAll: false
         };
 
@@ -1114,7 +1139,10 @@
             unsubscribeFirestore = window.FB.onSnapshot(docRef, async (docSnap) => {
                 if (docSnap.exists()) {
                     db = docSnap.data();
-                    if(!db.categories) db.categories = ['Makan', 'Jajan', 'Kost', 'Kuliah', 'Motor', 'Hiburan', 'Arisan', 'Tagihan', 'Lainnya'];
+                    if(!db.categories) db.categories = [{ name: 'Makan', type: 'expense' }, { name: 'Gaji', type: 'income' }, { name: 'Lainnya', type: 'expense' }];
+                    else {
+                        db.categories = db.categories.map(c => typeof c === 'string' ? { name: c, type: 'expense' } : c);
+                    }
                     if(!db.assetCategories) db.assetCategories = ['Kas / Bank', 'Investasi', 'Properti', 'Kendaraan', 'Utang / Liabilitas'];
                     if(!db.debts) db.debts = [];
                     if(!db.recurring) db.recurring = [];
@@ -1245,7 +1273,7 @@
             db.assets.forEach(a => { assetOpts += `<option value="${a.id}">${a.name} (${formatRupiah(a.balance)})</option>`; });
             recAsset.innerHTML = assetOpts;
             let catOpts = '';
-            db.categories.forEach(c => { catOpts += `<option value="${c}">${c}</option>`; });
+            db.categories.forEach(c => { catOpts += `<option value="${c.name}">${c.name} (${c.type === 'income' ? 'Pendapatan' : 'Pengeluaran'})</option>`; });
             recCat.innerHTML = catOpts;
         }
 
@@ -1259,7 +1287,7 @@
         function populateBudgetCategorySelects() {
             const selectBudgetCat = document.getElementById('budgetCategory');
             let html = '<option value="ALL">Semua Kategori Pengeluaran</option>';
-            db.categories.forEach(c => { html += `<option value="${c}">${c}</option>`; });
+            db.categories.filter(c => c.type === 'expense').forEach(c => { html += `<option value="${c.name}">${c.name}</option>`; });
             if(selectBudgetCat) selectBudgetCat.innerHTML = html;
         }
 
@@ -1267,7 +1295,7 @@
             const txCatSelect = document.getElementById('txCategory');
             if(txCatSelect) {
                 let html = '';
-                db.categories.forEach(c => { html += `<option value="${c}">${c}</option>`; });
+                db.categories.forEach(c => { html += `<option value="${c.name}">${c.name} (${c.type === 'income' ? 'Pendapatan' : 'Pengeluaran'})</option>`; });
                 txCatSelect.innerHTML = html;
             }
         }
@@ -1284,7 +1312,7 @@
             const sel = document.getElementById('livingItemCategorySelect');
             if(!sel) return;
             let html = '';
-            db.categories.forEach(c => { html += `<option value="${c}">${c}</option>`; });
+            db.categories.filter(c => c.type === 'expense').forEach(c => { html += `<option value="${c.name}">${c.name}</option>`; });
             sel.innerHTML = html;
         }
 
@@ -1298,8 +1326,11 @@
             const newCat = prompt('Masukkan nama kategori baru:');
             if(!newCat || !newCat.trim()) return;
             const trimmed = newCat.trim();
-            if(db.categories.includes(trimmed)) { showToast('Kategori sudah ada!', 'error'); return; }
-            db.categories.push(trimmed);
+            const type = prompt('Tipe kategori? (Ketik: expense atau income)', 'expense');
+            if(!['expense', 'income'].includes(type)) return;
+
+            if(db.categories.some(c => c.name === trimmed)) { showToast('Kategori sudah ada!', 'error'); return; }
+            db.categories.push({ name: trimmed, type });
             saveData("Kategori ditambahkan!");
             updateAll();
         }
@@ -1325,6 +1356,10 @@
 
         function switchFilterTab(tab) {
             filterState.activeTab = tab;
+            filterState.selectedCategories = [];
+            filterState.selectAll = false;
+            document.getElementById('filterSelectAll').checked = false;
+
             ['income', 'expense', 'asset'].forEach(t => {
                 const btn = document.getElementById(`btnFilterTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
                 if(t === tab) {
@@ -1381,8 +1416,26 @@
             document.getElementById('filterGrandTotal').innerText = formatRupiah(grandTotal);
 
             let checkboxHtml = '';
-            if(filterState.activeTab === 'income' || filterState.activeTab === 'expense') {
-                db.categories.forEach(cat => {
+            if(filterState.activeTab === 'income') {
+                const incomeCats = db.categories.filter(c => c.type === 'income');
+                incomeCats.forEach(catObj => {
+                    const cat = catObj.name;
+                    const amt = catTotals[cat] || 0;
+                    const isChecked = filterState.selectedCategories.includes(cat) || filterState.selectAll;
+                    checkboxHtml += `
+                        <div class="flex justify-between items-center py-2 border-b border-gray-800/60 text-xs">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" value="${cat}" ${isChecked ? 'checked' : ''} onchange="toggleFilterCategoryItem('${cat}', this.checked)" class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-primary-600 focus:ring-0">
+                                <span class="font-medium">${cat}</span>
+                            </label>
+                            <span class="text-gray-400">${amt > 0 ? formatRupiah(amt) : ''}</span>
+                        </div>
+                    `;
+                });
+            } else if(filterState.activeTab === 'expense') {
+                const expenseCats = db.categories.filter(c => c.type === 'expense');
+                expenseCats.forEach(catObj => {
+                    const cat = catObj.name;
                     const amt = catTotals[cat] || 0;
                     const isChecked = filterState.selectedCategories.includes(cat) || filterState.selectAll;
                     checkboxHtml += `
@@ -1425,7 +1478,6 @@
                     `;
                 });
             }
-            document.getElementById('filterCheckboxList').checkboxHtml = checkboxHtml;
             document.getElementById('filterCheckboxList').innerHTML = checkboxHtml;
         }
 
@@ -1435,7 +1487,7 @@
                 if(filterState.activeTab === 'asset') {
                     filterState.selectedCategories = db.assets.map(a => a.id);
                 } else {
-                    filterState.selectedCategories = [...db.categories];
+                    filterState.selectedCategories = db.categories.filter(c => c.type === filterState.activeTab).map(c => c.name);
                 }
             } else {
                 filterState.selectedCategories = [];
@@ -1973,7 +2025,7 @@
                                 <span class="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-2 py-0.5 rounded font-medium">${a.category}</span>
                                 <div class="space-x-1">
                                     <button onclick="editAsset('${a.id}')" class="text-gray-400 hover:text-primary-600 p-1" title="Edit Saldo"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="deleteAsset('${a.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    <button onclick="deleteAsset('${a.id}')" class="text-rose-400 hover:text-rose-600 p-1" title="Hapus Aset"><i class="fa-solid fa-trash text-xs"></i></button>
                                 </div>
                             </div>
                             <h4 class="font-bold text-base mb-1">${a.name}</h4>
@@ -2150,9 +2202,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: 35
-                    },
+                    layout: { padding: 35 },
                     plugins: {
                         legend: { display: false },
                         datalabels: {
@@ -2168,55 +2218,12 @@
                             textAlign: 'center',
                             anchor: 'end',
                             align: 'end',
-                            clamp: false,
                             display: function(ctx) {
                                 return !(ctx.chart.data.labels.length === 1 && ctx.chart.data.labels[0] === 'Tidak Ada Data');
                             }
                         }
-                    },
-                    elements: {
-                        arc: {
-                            borderWidth: 2
-                        }
                     }
-                },
-                plugins: [
-                    ChartDataLabels,
-                    {
-                        id: 'pieConnectorLines',
-                        afterDraw(chart) {
-                            if (chart.data.labels.length === 1 && chart.data.labels[0] === 'Tidak Ada Data') return;
-                            const { ctx, chartArea } = chart;
-                            const meta = chart.getDatasetMeta(0);
-                            
-                            ctx.save();
-                            ctx.strokeStyle = isDark ? '#4b5563' : '#9ca3af';
-                            ctx.lineWidth = 1;
-
-                            meta.data.forEach((arc) => {
-                                const { x, y, startAngle, endAngle, outerRadius } = arc;
-                                const angle = startAngle + (endAngle - startAngle) / 2;
-                                
-                                const cos = Math.cos(angle);
-                                const sin = Math.sin(angle);
-
-                                const startX = x + outerRadius * cos;
-                                const startY = y + outerRadius * sin;
-                                const midX = x + (outerRadius + 15) * cos;
-                                const midY = y + (outerRadius + 15) * sin;
-                                const endX = midX + (cos > 0 ? 15 : -15);
-                                const endY = midY;
-
-                                ctx.beginPath();
-                                ctx.moveTo(startX, startY);
-                                ctx.lineTo(midX, midY);
-                                ctx.lineTo(endX, endY);
-                                ctx.stroke();
-                            });
-                            ctx.restore();
-                        }
-                    }
-                ]
+                }
             });
         }
 
@@ -2226,16 +2233,53 @@
             sorted.forEach(([cat, amt]) => {
                 const pct = totalAmount > 0 ? Math.round((amt / totalAmount) * 100) : 0;
                 html += `
-                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700">
+                    <div onclick="openStatCategoryDetail('${cat}')" class="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-primary-500 transition">
                         <div class="flex items-center space-x-3">
-                            <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-600">${pct}%</span>
+                            <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-primary-50 dark:bg-primary-900/30 text-primary-600">${pct}%</span>
                             <span class="font-bold text-sm">${cat}</span>
                         </div>
-                        <span class="font-bold text-sm">${formatRupiah(amt)}</span>
+                        <div class="flex items-center space-x-3">
+                            <span class="font-bold text-sm">${formatRupiah(amt)}</span>
+                            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+                        </div>
                     </div>
                 `;
             });
             document.getElementById('statCategoryList').innerHTML = html || '<p class="text-center text-xs text-gray-400 py-6">Belum ada data untuk periode ini.</p>';
+        }
+
+        function openStatCategoryDetail(categoryName) {
+            const startDate = document.getElementById('statStartDate').value;
+            const endDate = document.getElementById('statEndDate').value;
+
+            document.getElementById('statDetailTitle').innerText = `Rincian Transaksi: ${categoryName}`;
+
+            const matchedTxs = db.transactions.filter(t => {
+                if(t.type !== statTypeFilterState) return false;
+                if((t.category || 'Lainnya') !== categoryName) return false;
+                if(startDate && t.date < startDate) return false;
+                if(endDate && t.date > endDate) return false;
+                return true;
+            });
+
+            let html = '';
+            matchedTxs.forEach(t => {
+                const assetObj = db.assets.find(a => a.id === t.assetId);
+                const isInc = t.type === 'income';
+                html += `
+                    <div class="p-3 bg-gray-800 rounded-xl border border-gray-700 flex justify-between items-center text-xs">
+                        <div>
+                            <span class="text-gray-400 block">${t.date} | ${assetObj ? assetObj.name : 'Aset'}</span>
+                            <strong class="text-white text-sm block mt-0.5">${t.note || '-'}</strong>
+                            ${t.description ? `<span class="text-gray-400">${t.description}</span>` : ''}
+                        </div>
+                        <span class="font-bold text-base ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}${formatRupiah(t.amount)}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('statDetailContent').innerHTML = html || '<p class="text-xs text-gray-400 text-center py-6">Tidak ada transaksi pada kategori ini.</p>';
+            document.getElementById('statDetailModal').classList.remove('hidden');
         }
 
         function renderStatBudgetView(startDate, endDate) {
@@ -2285,7 +2329,8 @@
             document.getElementById('statBudgetSummary').innerHTML = budgetSummaryHtml || '<p class="text-xs text-gray-400 text-center py-4">Belum ada anggaran.</p>';
 
             let catListHtml = '';
-            db.categories.forEach(c => {
+            db.categories.filter(c => c.type === 'expense').forEach(catObj => {
+                const c = catObj.name;
                 let catSpent = 0;
                 db.transactions.forEach(t => {
                     if(t.type === 'expense' && t.category === c) {
@@ -2416,7 +2461,11 @@
         function openCategoryManagerModal() {
             let html = '';
             db.categories.forEach(c => {
-                html += `<div class="flex justify-between items-center p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-sm"><span>${c}</span></div>`;
+                html += `
+                    <div class="flex justify-between items-center p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-sm">
+                        <span>${c.name} <span class="text-xs text-gray-400">(${c.type === 'income' ? 'Pendapatan' : 'Pengeluaran'})</span></span>
+                    </div>
+                `;
             });
             document.getElementById('categoryListContainer').innerHTML = html;
             document.getElementById('categoryModal').classList.remove('hidden');
@@ -2425,8 +2474,9 @@
         function addCustomCategory(e) {
             e.preventDefault();
             const name = document.getElementById('newCatName').value.trim();
-            if(!name || db.categories.includes(name)) return;
-            db.categories.push(name);
+            const type = document.getElementById('newCatType').value;
+            if(!name || db.categories.some(c => c.name === name)) return;
+            db.categories.push({ name, type });
             document.getElementById('newCatName').value = '';
             saveData("Kategori ditambahkan!");
             closeModal('categoryModal');
