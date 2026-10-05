@@ -574,9 +574,9 @@
 
     </main>
 
-    <!-- MODALS (Kini Dilengkapi Scrollable Container Agar Tombol Selalu Terlihat di Desktop) -->
+    <!-- MODALS -->
 
-    <!-- Transaction Modal (Keterangan & Catatan Opsional) -->
+    <!-- Transaction Modal -->
     <div id="txModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded-3xl shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h3 id="txModalTitle" class="text-base font-bold mb-4">Tambah Transaksi</h3>
@@ -718,7 +718,7 @@
         </div>
     </div>
 
-    <!-- Asset Modal (Auto-Selisih Saldo Terdeteksi) -->
+    <!-- Asset Modal -->
     <div id="assetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded-3xl shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h3 id="assetModalTitle" class="text-base font-bold mb-4">Tambah / Edit Aset & Saldo</h3>
@@ -902,8 +902,8 @@
         let expenseChartInstance = null;
         let unsubscribeFirestore = null;
 
-        let statSubTabState = 'stat'; // 'stat' | 'budget' | 'notes'
-        let statTypeFilterState = 'expense'; // 'income' | 'expense'
+        let statSubTabState = 'stat';
+        let statTypeFilterState = 'expense';
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toastNotification');
@@ -1023,6 +1023,8 @@
                     if(!db.assetCategories) db.assetCategories = ['Kas / Bank', 'Investasi', 'Properti', 'Kendaraan', 'Utang / Liabilitas'];
                     if(!db.debts) db.debts = [];
                     if(!db.recurring) db.recurring = [];
+                    if(!db.savings) db.savings = [];
+                    if(!db.livingCosts) db.livingCosts = [];
                     updateAll();
                 } else {
                     try { await window.FB.setDoc(docRef, db); } catch(err) { console.error(err); }
@@ -1213,6 +1215,120 @@
             populateAssetCategorySelects();
             document.getElementById('assetCategory').value = trimmed;
         }
+
+        // ==========================================
+        // SAVINGS & DEBTS RENDER FUNCTIONS
+        // ==========================================
+        function renderSavings() {
+            let html = '';
+            if(!db.savings) db.savings = [];
+            db.savings.forEach(g => {
+                const pct = g.target > 0 ? Math.min(100, Math.round((g.current / g.target) * 100)) : 0;
+                html += `
+                    <div class="bg-gray-50 dark:bg-gray-950/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 px-2.5 py-0.5 rounded font-medium">${pct}% Tercapai</span>
+                                <button onclick="deleteGoal('${g.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                            <h4 class="font-bold text-base mb-1">${g.name}</h4>
+                        </div>
+                        <div class="my-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Terkumpul: <strong>${formatRupiah(g.current)}</strong></span>
+                                <span>Target: <strong>${formatRupiah(g.target)}</strong></span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-emerald-500 h-2.5 rounded-full" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('savingsGrid').innerHTML = html || '<p class="text-gray-400 text-sm col-span-full text-center py-6">Belum ada target tabungan.</p>';
+        }
+
+        function openGoalModal() {
+            document.getElementById('goalId').value = '';
+            document.getElementById('goalName').value = '';
+            document.getElementById('goalTarget').value = '';
+            document.getElementById('goalCurrent').value = '0';
+            populateGoalSourceSelects();
+            document.getElementById('goalModal').classList.remove('hidden');
+        }
+
+        function saveGoal(e) {
+            e.preventDefault();
+            const name = document.getElementById('goalName').value.trim();
+            const target = Number(document.getElementById('goalTarget').value);
+            const current = Number(document.getElementById('goalCurrent').value);
+            const sourceAssetId = document.getElementById('goalSourceAssetId').value;
+            if(!db.savings) db.savings = [];
+            db.savings.push({ id: Date.now().toString(), name, target, current, sourceAssetId });
+            saveData("Target tabungan disimpan!");
+            closeModal('goalModal');
+        }
+
+        function deleteGoal(id) {
+            showConfirm('Hapus Target', 'Hapus target tabungan ini?', () => {
+                db.savings = db.savings.filter(g => g.id !== id);
+                saveData("Target tabungan dihapus.");
+            });
+        }
+
+        function renderDebts() {
+            let html = '';
+            if(!db.debts) db.debts = [];
+            db.debts.forEach(d => {
+                const isPayable = d.type === 'payable';
+                html += `
+                    <div class="bg-gray-50 dark:bg-gray-950/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs px-2.5 py-0.5 rounded font-medium ${isPayable ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}">${isPayable ? 'Utang' : 'Piutang'}</span>
+                                <button onclick="deleteDebt('${d.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                            <h4 class="font-bold text-base mb-1">${d.person}</h4>
+                            <p class="text-xs text-gray-500">Jatuh Tempo: ${d.dueDate}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Total Nominal</span>
+                            <span class="font-bold text-base ${isPayable ? 'text-rose-600' : 'text-emerald-600'}">${formatRupiah(d.amount)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('debtsGrid').innerHTML = html || '<p class="text-gray-400 text-sm col-span-full text-center py-6">Tidak ada catatan utang/piutang.</p>';
+        }
+
+        function openDebtModal() {
+            document.getElementById('debtId').value = '';
+            document.getElementById('debtPerson').value = '';
+            document.getElementById('debtAmount').value = '';
+            document.getElementById('debtDueDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('debtModal').classList.remove('hidden');
+        }
+
+        function saveDebt(e) {
+            e.preventDefault();
+            const type = document.getElementById('debtType').value;
+            const person = document.getElementById('debtPerson').value.trim();
+            const amount = Number(document.getElementById('debtAmount').value);
+            const dueDate = document.getElementById('debtDueDate').value;
+            if(!db.debts) db.debts = [];
+            db.debts.push({ id: Date.now().toString(), type, person, amount, dueDate });
+            saveData("Utang/Piutang berhasil dicatat!");
+            closeModal('debtModal');
+        }
+
+        function deleteDebt(id) {
+            showConfirm('Hapus Utang/Piutang', 'Hapus catatan ini?', () => {
+                db.debts = db.debts.filter(d => d.id !== id);
+                saveData("Catatan dihapus.");
+            });
+        }
+
+        function renderLivingCosts() {}
 
         function renderRecurring() {
             let html = '';
