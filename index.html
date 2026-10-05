@@ -450,7 +450,8 @@
                 <!-- 1. SUB TAB: STATISTIK -->
                 <div id="statSubContentStat" class="space-y-6">
                     <div class="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
-                        <div class="w-full max-w-sm h-72 relative flex items-center justify-center">
+                        <!-- Kotak diperbesar agar label luar lingkaran tidak terpotong -->
+                        <div class="w-full max-w-lg h-96 relative flex items-center justify-center">
                             <canvas id="expenseChart"></canvas>
                         </div>
                     </div>
@@ -547,7 +548,6 @@
                         <tbody id="livingItemsTableBody"></tbody>
                     </table>
                 </div>
-                <!-- Box Total Biaya Hidup yang Diperbarui dengan latar belakang gelap kontras di mode gelap -->
                 <div class="p-4 bg-slate-900 dark:bg-slate-950 text-white rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3 border border-slate-800">
                     <div>
                         <span class="text-xs text-slate-300 block font-medium">Total Estimasi Biaya Hidup Bulanan:</span>
@@ -1865,38 +1865,89 @@
 
             if(expenseChartInstance) expenseChartInstance.destroy();
 
+            const isDark = document.documentElement.classList.contains('dark');
+
             expenseChartInstance = new Chart(ctx, {
-                type: 'doughnut',
+                type: 'pie',
                 data: {
                     labels: labels.length ? labels : ['Tidak Ada Data'],
                     datasets: [{
                         data: data.length ? data : [1],
-                        backgroundColor: colors
+                        backgroundColor: colors,
+                        borderWidth: 1,
+                        borderColor: isDark ? '#1f2937' : '#ffffff'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: 35
+                    },
                     plugins: {
                         legend: { display: false },
                         datalabels: {
-                            color: '#ffffff',
+                            color: isDark ? '#f3f4f6' : '#1f2937',
                             font: { weight: 'bold', size: 11 },
                             formatter: (value, ctx) => {
                                 if (value === 1 && ctx.chart.data.labels.length === 1 && ctx.chart.data.labels[0] === 'Tidak Ada Data') return '';
+                                const label = ctx.chart.data.labels[ctx.dataIndex];
                                 const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
-                                let shortNominal = value >= 1000000 ? (value/1000000).toFixed(1) + 'jt' : (value >= 1000 ? (value/1000).toFixed(0) + 'rb' : value);
-                                return `${shortNominal}\n(${percentage})`;
+                                return `${label}\n${percentage}`;
                             },
                             textAlign: 'center',
                             anchor: 'end',
-                            align: 'start',
-                            offset: 4
+                            align: 'end',
+                            clamp: false,
+                            display: function(ctx) {
+                                return !(ctx.chart.data.labels.length === 1 && ctx.chart.data.labels[0] === 'Tidak Ada Data');
+                            }
+                        }
+                    },
+                    elements: {
+                        arc: {
+                            borderWidth: 2
                         }
                     }
                 },
-                plugins: [ChartDataLabels]
+                plugins: [
+                    ChartDataLabels,
+                    {
+                        id: 'pieConnectorLines',
+                        afterDraw(chart) {
+                            if (chart.data.labels.length === 1 && chart.data.labels[0] === 'Tidak Ada Data') return;
+                            const { ctx, chartArea } = chart;
+                            const meta = chart.getDatasetMeta(0);
+                            
+                            ctx.save();
+                            ctx.strokeStyle = isDark ? '#4b5563' : '#9ca3af';
+                            ctx.lineWidth = 1;
+
+                            meta.data.forEach((arc) => {
+                                const { x, y, startAngle, endAngle, outerRadius } = arc;
+                                const angle = startAngle + (endAngle - startAngle) / 2;
+                                
+                                const cos = Math.cos(angle);
+                                const sin = Math.sin(angle);
+
+                                const startX = x + outerRadius * cos;
+                                const startY = y + outerRadius * sin;
+                                const midX = x + (outerRadius + 15) * cos;
+                                const midY = y + (outerRadius + 15) * sin;
+                                const endX = midX + (cos > 0 ? 15 : -15);
+                                const endY = midY;
+
+                                ctx.beginPath();
+                                ctx.moveTo(startX, startY);
+                                ctx.lineTo(midX, midY);
+                                ctx.lineTo(endX, endY);
+                                ctx.stroke();
+                            });
+                            ctx.restore();
+                        }
+                    }
+                ]
             });
         }
 
