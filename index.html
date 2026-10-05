@@ -6,13 +6,13 @@
     <title>DompetKu - Aplikasi Pengaturan Keuangan & Budgeting Cloud</title>
     <!-- PWA Manifest Link -->
     <link rel="manifest" href="data:application/manifest+json,{
-        'name': 'DompetKu Cloud',
-        'short_name': 'DompetKu',
-        'start_url': '.',
-        'display': 'standalone',
-        'background_color': '#0f172a',
-        'theme_color': '#4f46e5',
-        'icons': [{ 'src': 'https://cdn-icons-png.flaticon.com/512/3135/3135706.png', 'sizes': '512x512', 'type': 'image/png' }]
+        &quot;name&quot;: &quot;DompetKu Cloud&quot;,
+        &quot;short_name&quot;: &quot;DompetKu&quot;,
+        &quot;start_url&quot;: &quot;.&quot;,
+        &quot;display&quot;: &quot;standalone&quot;,
+        &quot;background_color&quot;: &quot;#0f172a&quot;,
+        &quot;theme_color&quot;: &quot;#4f46e5&quot;,
+        &quot;icons&quot;: [{ &quot;src&quot;: &quot;https://cdn-icons-png.flaticon.com/512/3135/3135706.png&quot;, &quot;sizes&quot;: &quot;512x512&quot;, &quot;type&quot;: &quot;image/png&quot; }]
     }">
     <meta name="theme-color" content="#4f46e5">
 
@@ -455,7 +455,10 @@
                             <canvas id="expenseChart"></canvas>
                         </div>
                     </div>
-                    <div id="statCategoryList" class="space-y-3"></div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-2 italic">* Klik salah satu kategori di bawah untuk melihat detail transaksi.</p>
+                        <div id="statCategoryList" class="space-y-3"></div>
+                    </div>
                 </div>
 
                 <!-- 2. SUB TAB: ANGGARAN -->
@@ -660,6 +663,17 @@
                     <button type="submit" class="px-5 py-2 text-sm rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition shadow-lg">Simpan</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Category Detail Transactions Modal -->
+    <div id="categoryTxModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-lg p-6 rounded-3xl shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="categoryTxModalTitle" class="text-base font-bold">Detail Transaksi Kategori</h3>
+                <button onclick="closeModal('categoryTxModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="categoryTxListContent" class="space-y-3"></div>
         </div>
     </div>
 
@@ -1741,7 +1755,7 @@
                                 <span class="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-2 py-0.5 rounded font-medium">${a.category}</span>
                                 <div class="space-x-1">
                                     <button onclick="editAsset('${a.id}')" class="text-gray-400 hover:text-primary-600 p-1" title="Edit Saldo"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="deleteAsset('${a.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    <button onclick="deleteAsset('${a.id}')" class="text-rose-400 hover:text-rose-600 p-1" title="Hapus Aset"><i class="fa-solid fa-trash text-xs"></i></button>
                                 </div>
                             </div>
                             <h4 class="font-bold text-base mb-1">${a.name}</h4>
@@ -1994,16 +2008,51 @@
             sorted.forEach(([cat, amt]) => {
                 const pct = totalAmount > 0 ? Math.round((amt / totalAmount) * 100) : 0;
                 html += `
-                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700">
+                    <div onclick="showCategoryTransactions('${cat}')" class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/80 transition flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700">
                         <div class="flex items-center space-x-3">
                             <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-600">${pct}%</span>
                             <span class="font-bold text-sm">${cat}</span>
                         </div>
-                        <span class="font-bold text-sm">${formatRupiah(amt)}</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-sm">${formatRupiah(amt)}</span>
+                            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+                        </div>
                     </div>
                 `;
             });
             document.getElementById('statCategoryList').innerHTML = html || '<p class="text-center text-xs text-gray-400 py-6">Belum ada data untuk periode ini.</p>';
+        }
+
+        function showCategoryTransactions(categoryName) {
+            const startDate = document.getElementById('statStartDate').value;
+            const endDate = document.getElementById('statEndDate').value;
+
+            const filtered = db.transactions.filter(t => {
+                if(t.type !== statTypeFilterState) return false;
+                if((t.category || 'Lainnya') !== categoryName) return false;
+                if(startDate && t.date < startDate) return false;
+                if(endDate && t.date > endDate) return false;
+                return true;
+            });
+
+            document.getElementById('categoryTxModalTitle').innerText = `Detail Kategori: ${categoryName}`;
+            let html = '';
+            filtered.forEach(t => {
+                const noteDisplay = t.note || t.description || '(Tanpa Keterangan)';
+                const descDisplay = t.description ? `<span class="text-xs text-gray-400 block">${t.description}</span>` : '';
+                html += `
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm">
+                        <div>
+                            <span class="text-xs text-gray-400 block">${t.date}</span>
+                            <span class="font-semibold">${noteDisplay}</span>
+                            ${descDisplay}
+                        </div>
+                        <span class="font-bold text-rose-600">${formatRupiah(t.amount)}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('categoryTxListContent').innerHTML = html || '<p class="text-center text-xs text-gray-400 py-4">Tidak ada transaksi pada kategori ini untuk periode tersebut.</p>';
+            document.getElementById('categoryTxModal').classList.remove('hidden');
         }
 
         function renderStatBudgetView(startDate, endDate) {
